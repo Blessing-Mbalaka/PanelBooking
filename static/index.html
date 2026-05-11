@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>UJ Panel Booking</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    :root {
+      --orange: #f58220;
+      --gold: #ffc72c;
+      --black: #111827;
+      --grey: #6b7280;
+      --white: #ffffff;
+      --soft: #fff7ed;
+      --green: #16a34a;
+      --red: #dc2626;
+      --line: #e5e7eb;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, rgba(245, 130, 32, 0.22), transparent 30%), #f8fafc;
+      color: var(--black);
+    }
+
+    header {
+      background: linear-gradient(135deg, #111827, #1f2937);
+      color: white;
+      padding: 36px 20px 52px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: "UJ";
+      position: absolute;
+      right: 32px;
+      top: 20px;
+      font-size: 100px;
+      font-weight: 900;
+      color: rgba(245, 130, 32, 0.25);
+      letter-spacing: -8px;
+    }
+
+    .header-inner {
+      max-width: 1180px;
+      margin: auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tag {
+      display: inline-block;
+      background: rgba(245, 130, 32, 0.16);
+      border: 1px solid rgba(245, 130, 32, 0.45);
+      color: #fed7aa;
+      padding: 7px 13px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(36px, 6vw, 58px);
+      line-height: 0.95;
+      letter-spacing: -2px;
+    }
+
+    .subtitle {
+      margin: 12px 0 0;
+      color: #e5e7eb;
+      font-size: 17px;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: -30px auto 35px;
+      padding: 0 18px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .card {
+      background: white;
+      border-radius: 28px;
+      padding: 22px;
+      box-shadow: 0 22px 50px rgba(17, 24, 39, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+    }
+
+    .booking-card {
+      position: sticky;
+      top: 18px;
+      border-top: 8px solid var(--orange);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 22px;
+    }
+
+    .quick-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      background: var(--soft);
+      color: #c2410c;
+      border: 1px solid #fed7aa;
+      border-radius: 16px;
+      padding: 10px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-size: 12px;
+      font-weight: 900;
+      color: #4b5563;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, select, button {
+      width: 100%;
+      margin-top: 6px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid #d1d5db;
+      font-size: 15px;
+      background: white;
+    }
+
+    input:focus, select:focus {
+      outline: 4px solid rgba(245, 130, 32, 0.18);
+      border-color: var(--orange);
+    }
+
+    button {
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--orange), #f59e0b);
+      box-shadow: 0 12px 26px rgba(245, 130, 32, 0.32);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 11px;
+    }
+
+    .secondary {
+      background: var(--black);
+      box-shadow: none;
+    }
+
+    .danger {
+      background: var(--red);
+      box-shadow: none;
+    }
+
+    .message {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 16px;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .success {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .summary-box {
+      min-height: 100px;
+      border-radius: 24px;
+      padding: 18px;
+      color: white;
+      background: linear-gradient(135deg, #111827, #374151);
+      overflow: hidden;
+    }
+
+    .summary-box:nth-child(2) {
+      background: linear-gradient(135deg, var(--orange), #f59e0b);
+    }
+
+    .summary-box strong {
+      display: block;
+      font-size: 38px;
+      line-height: 1;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .summary-box:nth-child(2) strong {
+      color: white;
+    }
+
+    .day-section {
+      margin-bottom: 24px;
+    }
+
+    .day-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      border-radius: 20px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      font-weight: 900;
+      border-left: 8px solid var(--orange);
+      box-shadow: 0 10px 24px rgba(17, 24, 39, 0.07);
+    }
+
+    .day-title span:last-child {
+      color: #c2410c;
+      font-size: 13px;
+      background: var(--soft);
+      padding: 6px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .panel-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 14px;
+      box-shadow: 0 12px 28px rgba(17, 24, 39, 0.07);
+    }
+
+    .panel-card.full {
+      background: #fff1f2;
+      border-color: #fecdd3;
+    }
+
+    .panel-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .panel-card h3 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .badge {
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .open-badge {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .full-badge {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .counts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .count-box {
+      background: #f9fafb;
+      border: 1px solid #f3f4f6;
+      border-radius: 15px;
+      padding: 9px;
+      text-align: center;
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 800;
+    }
+
+    .count-box strong {
+      display: block;
+      font-size: 19px;
+      color: var(--black);
+      margin-bottom: 2px;
+    }
+
+    .list {
+      margin-top: 10px;
+      padding: 11px;
+      min-height: 76px;
+      border-radius: 16px;
+      background: #fafafa;
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .list-title {
+      margin-top: 8px;
+      color: #c2410c;
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .slot-row {
+      padding: 6px 0;
+      border-bottom: 1px dashed #e5e7eb;
+    }
+
+    .empty {
+      color: #9ca3af;
+    }
+
+    @media (max-width: 980px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .booking-card {
+        position: static;
+      }
+      .panel-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 620px) {
+      header::after {
+        display: none;
+      }
+      .panel-grid,
+      .summary,
+      .quick-row,
+      .controls {
+        grid-template-columns: 1fr;
+      }
+      .day-title {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="tag">UJ Panel Schedule</div>
+      <h1>Panel Booking</h1>
+      <p class="subtitle">Select date. Select panel. Select slot.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <section class="card booking-card">
+        <h2>Book</h2>
+
+        <div class="quick-row">
+          <div class="pill"><span id="systemStudents">0</span> Students</div>
+          <div class="pill"><span id="systemSupervisors">0</span> Supervisors</div>
+        </div>
+
+        <label for="firstName">First Name</label>
+        <input type="text" id="firstName" placeholder="First name" autocomplete="given-name" />
+
+        <label for="surname">Surname</label>
+        <input type="text" id="surname" placeholder="Surname" autocomplete="family-name" />
+
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="university@email.ac.za" autocomplete="email" />
+
+        <label for="role">Type</label>
+        <select id="role">
+          <option value="student">Student</option>
+          <option value="supervisor">Supervisor</option>
+        </select>
+
+        <div id="supervisorFieldContainer" style="display:none; margin-bottom:1.2rem;">
+          <label for="supervisorSearch">Your Supervisor</label>
+          <input type="text" id="supervisorSearch" placeholder="Type to search…" autocomplete="off" style="width:100%; box-sizing:border-box; padding:.5rem .75rem; border:1px solid var(--border,#ccc); border-radius:6px;" />
+          <div id="supervisorDropdown" style="position:absolute; background:white; border:1px solid #ccc; border-top:none; border-radius:0 0 6px 6px; max-height:200px; overflow-y:auto; width:calc(100% - 1.5rem - 2px); display:none; margin-top:-1px; z-index:100; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+          </div>
+          <input type="hidden" id="supervisorName" />
+        </div>
+
+        <label for="date">Date</label>
+        <select id="date"></select>
+
+        <label for="panel">Panel</label>
+        <select id="panel"></select>
+
+        <label for="slot" id="slotLabel">Slot</label>
+        <select id="slot"></select>
+
+        <button type="button" onclick="bookSlot()">Confirm Booking</button>
+
+        <div id="message" class="message"></div>
+
+        <hr style="margin:1.2rem 0;border-color:var(--border,#e0e0e0);" />
+
+        <h3 style="margin:0 0 .6rem;">Cancel My Booking</h3>
+        <p style="font-size:.85rem;color:#666;margin:0 0 .8rem;">
+          Enter the email you booked with. Only one active booking is allowed per person.
+        </p>
+
+        <label for="cancelEmail">Email</label>
+        <input type="email" id="cancelEmail" placeholder="Your booking email" />
+
+        <label for="cancelReason">Reason for cancellation</label>
+        <textarea id="cancelReason" rows="2" placeholder="Briefly explain why you are cancelling…" style="width:100%;box-sizing:border-box;padding:.5rem .75rem;border:1px solid var(--border,#ccc);border-radius:6px;font-size:.9rem;resize:vertical;"></textarea>
+
+        <button type="button" class="secondary" style="margin-top:.5rem;" onclick="lookupAndCancel()">Cancel Booking</button>
+
+        <div id="cancelMessage" class="message"></div>
+
+        <hr style="margin:1.2rem 0;border-color:var(--border,#e0e0e0);" />
+
+        <div class="controls">
+          <button type="button" class="secondary" onclick="window.location.href='/load-data/'">Load Excel</button>
+          <button type="button" class="secondary" onclick="downloadCSV()">Export</button>
+          <button type="button" class="danger" onclick="resetBookings()">Clear</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Live Schedule</h2>
+
+        <div class="summary">
+          <div class="summary-box">
+            <strong id="totalStudents">0/0</strong>
+            Students
+          </div>
+          <div class="summary-box">
+            <strong id="totalSupervisors">0/0</strong>
+            Supervisors
+          </div>
+        </div>
+
+        <div id="schedule"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/static/bookingpage.js"></script>
+</body>
+</html>

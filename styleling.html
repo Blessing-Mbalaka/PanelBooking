@@ -1,0 +1,784 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UJ Panel Presentation Schedule</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    :root {
+      --orange: #ff5a1f;
+      --orange-soft: #fff0e8;
+      --orange-light: #ffe1d3;
+      --black: #171717;
+      --grey: #737373;
+      --line: #eeeeee;
+      --bg: #f7f7f7;
+      --white: #ffffff;
+      --green: #18a957;
+      --red: #dc2626;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--black);
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 18px 140px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 42px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      background: var(--orange);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 25px;
+      box-shadow: 0 14px 30px rgba(255, 90, 31, 0.28);
+    }
+
+    .brand small {
+      display: block;
+      color: var(--grey);
+      font-weight: 600;
+      letter-spacing: 0;
+      margin-top: 2px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 52px);
+      letter-spacing: -2.5px;
+      line-height: 1;
+    }
+
+    .hero p {
+      margin: 12px 0 0;
+      color: var(--grey);
+      font-size: 18px;
+    }
+
+    .hero-stats {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 18px 45px rgba(23, 23, 23, 0.08);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 15px;
+      background: var(--orange-soft);
+      color: var(--orange);
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .stat span {
+      color: var(--grey);
+      font-size: 13px;
+    }
+
+    .schedule {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .day-card {
+      background: white;
+      border-radius: 26px;
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 45px rgba(23, 23, 23, 0.07);
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 130px 1fr 90px;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .day-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 28px;
+      width: 7px;
+      height: 64px;
+      background: var(--orange);
+      border-radius: 0 20px 20px 0;
+    }
+
+    .date-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 8px;
+    }
+
+    .date-icon {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: var(--orange-soft);
+      color: var(--orange);
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+    }
+
+    .day-name {
+      color: var(--orange);
+      font-weight: 900;
+      font-size: 16px;
+    }
+
+    .date-num {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 0.9;
+    }
+
+    .month {
+      color: var(--grey);
+      font-size: 20px;
+    }
+
+    .time-pill {
+      margin-top: 8px;
+      background: var(--orange-soft);
+      color: var(--orange);
+      border-radius: 999px;
+      padding: 8px 13px;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .slot-area {
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 18px;
+      align-content: center;
+    }
+
+    .panel-headings,
+    .slot-row {
+      display: grid;
+      grid-template-columns: 105px repeat(4, 1fr);
+      gap: 18px;
+      align-items: center;
+    }
+
+    .panel-title {
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .role-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--black);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .role-label span {
+      color: var(--orange);
+      font-size: 18px;
+    }
+
+    .slot-control select {
+      width: 100%;
+      border: 1px solid #dddddd;
+      border-radius: 10px;
+      padding: 13px 12px;
+      color: var(--black);
+      background: white;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .slot-control select:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.12);
+    }
+
+    .slot-control small {
+      display: block;
+      margin-top: 8px;
+      color: var(--orange);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .unavailable {
+      min-height: 74px;
+      border-left: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      color: #b8b8b8;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .unavailable strong {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid #d9d9d9;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 7px;
+      font-size: 20px;
+      font-weight: 400;
+    }
+
+    .total-box {
+      border-left: 1px solid var(--line);
+      padding-left: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 28px;
+    }
+
+    .total-box .label {
+      color: var(--orange);
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .total-number {
+      font-size: 38px;
+      line-height: 1;
+      color: var(--orange);
+      font-weight: 800;
+    }
+
+    .total-box small {
+      color: var(--black);
+    }
+
+    .booking-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      width: min(1140px, calc(100% - 36px));
+      background: rgb(255, 216, 202);
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 45px rgba(23, 23, 23, 0.14);
+      border-radius: 24px;
+      padding: 18px 22px;
+      z-index: 50;
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .booking-inputs {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr 1.5fr;
+      gap: 12px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      color: var(--grey);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    input,
+    .booking-inputs select {
+      width: 100%;
+      padding: 13px 12px;
+      border: 1px solid #dddddd;
+      border-radius: 12px;
+      outline: none;
+      font-size: 14px;
+      background: rgb(255, 255, 255);
+    }
+
+    input:focus,
+    .booking-inputs select:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.12);
+    }
+
+    .confirm-btn {
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--orange), #ff7a2f);
+      color: white;
+      font-size: 16px;
+      font-weight: 900;
+      padding: 16px;
+      cursor: pointer;
+      box-shadow: 0 16px 30px rgba(255, 90, 31, 0.28);
+    }
+
+    .message {
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .success {
+      color: var(--green);
+    }
+
+    .error {
+      color: var(--red);
+    }
+
+    .tools {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .mini-btn {
+      border: none;
+      background: #f1f1f1;
+      color: var(--black);
+      border-radius: 999px;
+      padding: 8px 13px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--orange);
+      margin-top: 34px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 1000px) {
+      .hero,
+      .day-card,
+      .booking-bar {
+        grid-template-columns: 1fr;
+      }
+
+      .booking-bar {
+        position: static;
+        transform: none;
+        width: 100%;
+        margin-top: 28px;
+      }
+
+      .page {
+        padding-bottom: 40px;
+      }
+
+      .total-box {
+        border-left: none;
+        border-top: 1px solid var(--line);
+        padding-left: 0;
+        padding-top: 18px;
+        flex-direction: row;
+        justify-content: space-around;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .panel-headings {
+        display: none;
+      }
+
+      .slot-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .slot-control::before {
+        content: attr(data-panel);
+        display: block;
+        font-weight: 900;
+        margin-bottom: 6px;
+      }
+
+      .booking-inputs,
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .date-box {
+        align-items: flex-start;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">UJ</div>
+        <div>
+          UNIVERSITY OF JOHANNESBURG
+          <small>Panel Presentations</small>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <h1>Panel Presentation Schedule</h1>
+        <p>Book your student or supervisor slot.</p>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-icon">👥</div>
+          <div><strong id="topStudents">70</strong><span>Students</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon">👤</div>
+          <div><strong id="topSupervisors">28</strong><span>Supervisors</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="schedule" id="schedule"></section>
+
+    <section class="booking-bar">
+      <div>
+        <div class="booking-inputs">
+          <div>
+            <label for="nameInput">Full name</label>
+            <input id="nameInput" type="text" placeholder="Enter your name" />
+          </div>
+          <div>
+            <label for="roleSelect">Type</label>
+            <select id="roleSelect">
+              <option value="student">Student</option>
+              <option value="supervisor">Supervisor</option>
+            </select>
+          </div>
+          <div>
+            <label id="choiceLabel">Selected slot</label>
+            <input id="selectedSlot" type="text" placeholder="Choose a slot above" readonly />
+          </div>
+        </div>
+        <div class="message" id="message"></div>
+        <div class="tools">
+          <button class="mini-btn" onclick="downloadCSV()">Export</button>
+          <button class="mini-btn" onclick="resetBookings()">Clear</button>
+        </div>
+      </div>
+      <button class="confirm-btn" onclick="confirmBooking()">✓ Confirm Booking</button>
+    </section>
+
+    <footer>© University of Johannesburg</footer>
+  </div>
+
+  <script>
+    const scheduleConfig = [
+      {
+        day: "MON",
+        date: "Monday 25 May",
+        number: "25",
+        month: "MAY",
+        panels: ["Panel 1", "Panel 2", "Panel 3", "Panel 4"],
+        studentSlots: ["10:00 - 10:30", "10:30 - 11:00", "11:00 - 11:30", "11:30 - 12:00", "12:30 - 13:00"],
+        supervisorSlots: ["Supervisor 1", "Supervisor 2"]
+      },
+      {
+        day: "TUE",
+        date: "Tuesday 26 May",
+        number: "26",
+        month: "MAY",
+        panels: ["Panel 1", "Panel 2", "Panel 3", "Panel 4"],
+        studentSlots: ["10:00 - 10:30", "10:30 - 11:00", "11:00 - 11:30", "11:30 - 12:00", "12:30 - 13:00"],
+        supervisorSlots: ["Supervisor 1", "Supervisor 2"]
+      },
+      {
+        day: "WED",
+        date: "Wednesday 27 May",
+        number: "27",
+        month: "MAY",
+        panels: ["Panel 1", "Panel 2", "Panel 3", "Panel 4"],
+        studentSlots: ["10:00 - 10:30", "10:30 - 11:00", "11:00 - 11:30", "11:30 - 12:00", "12:30 - 13:00"],
+        supervisorSlots: ["Supervisor 1", "Supervisor 2"]
+      },
+      {
+        day: "THU",
+        date: "Thursday 28 May",
+        number: "28",
+        month: "MAY",
+        panels: ["Panel 1", "Panel 2"],
+        studentSlots: ["10:00 - 10:30", "10:30 - 11:00", "11:00 - 11:30", "11:30 - 12:00", "12:30 - 13:00"],
+        supervisorSlots: ["Supervisor 1", "Supervisor 2"]
+      }
+    ];
+
+    const STORAGE_KEY = "ujPanelBookings_final_clean";
+    let bookings = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let selectedChoice = null;
+
+    const scheduleEl = document.getElementById("schedule");
+    const roleSelect = document.getElementById("roleSelect");
+    const nameInput = document.getElementById("nameInput");
+    const selectedSlotInput = document.getElementById("selectedSlot");
+    const messageEl = document.getElementById("message");
+
+    function renderSchedule() {
+      scheduleEl.innerHTML = "";
+      let studentTotal = 0;
+      let supervisorTotal = 0;
+
+      scheduleConfig.forEach(day => {
+        const dayStudentTotal = day.panels.length * day.studentSlots.length;
+        const daySupervisorTotal = day.panels.length * day.supervisorSlots.length;
+
+        studentTotal += dayStudentTotal;
+        supervisorTotal += daySupervisorTotal;
+
+        const card = document.createElement("article");
+        card.className = "day-card";
+
+        const dateBox = `
+          <div class="date-box">
+            <div class="date-icon">📅</div>
+            <div class="day-name">${day.day}</div>
+            <div class="date-num">${day.number}</div>
+            <div class="month">${day.month}</div>
+            <div class="time-pill">10:00 - 12:30</div>
+          </div>
+        `;
+
+        let headings = `<div class="panel-headings"><div></div>`;
+        ["Panel 1", "Panel 2", "Panel 3", "Panel 4"].forEach(panel => {
+          headings += `<div class="panel-title">${panel}</div>`;
+        });
+        headings += `</div>`;
+
+        let studentRow = `<div class="slot-row"><div class="role-label"><span>👥</span>Students</div>`;
+        ["Panel 1", "Panel 2", "Panel 3", "Panel 4"].forEach(panel => {
+          if (!day.panels.includes(panel)) {
+            studentRow += `<div class="unavailable"><div><strong>−</strong>Not available</div></div>`;
+          } else {
+            studentRow += buildSelect(day, panel, "student");
+          }
+        });
+        studentRow += `</div>`;
+
+        let supervisorRow = `<div class="slot-row"><div class="role-label"><span>👤</span>Supervisors</div>`;
+        ["Panel 1", "Panel 2", "Panel 3", "Panel 4"].forEach(panel => {
+          if (!day.panels.includes(panel)) {
+            supervisorRow += `<div class="unavailable"><div><strong>−</strong>Not available</div></div>`;
+          } else {
+            supervisorRow += buildSelect(day, panel, "supervisor");
+          }
+        });
+        supervisorRow += `</div>`;
+
+        const totalBox = `
+          <div class="total-box">
+            <div>
+              <div class="label">Total</div>
+              <div class="total-number">${dayStudentTotal}</div>
+              <small>Students</small>
+            </div>
+            <div>
+              <div class="total-number">${daySupervisorTotal}</div>
+              <small>Supervisors</small>
+            </div>
+          </div>
+        `;
+
+        card.innerHTML = dateBox + `<div class="slot-area">${headings}${studentRow}${supervisorRow}</div>` + totalBox;
+        scheduleEl.appendChild(card);
+      });
+
+      document.getElementById("topStudents").textContent = studentTotal;
+      document.getElementById("topSupervisors").textContent = supervisorTotal;
+    }
+
+    function buildSelect(day, panel, role) {
+      const slots = role === "student" ? day.studentSlots : day.supervisorSlots;
+      let html = `<div class="slot-control" data-panel="${panel}">
+        <select onchange="selectSlot(this, '${day.date}', '${panel}', '${role}')">
+          <option value="">${role === "student" ? "Select time" : "Select slot"}</option>`;
+
+      slots.forEach(slot => {
+        const taken = isTaken(day.date, panel, role, slot);
+        html += `<option value="${slot}" ${taken ? "disabled" : ""}>${slot}${taken ? " • Taken" : ""}</option>`;
+      });
+
+      html += `</select><small>${slots.length} slots</small></div>`;
+      return html;
+    }
+
+    function selectSlot(select, date, panel, role) {
+      if (!select.value) return;
+
+      roleSelect.value = role;
+      selectedChoice = {
+        date: date,
+        panel: panel,
+        role: role,
+        slot: select.value
+      };
+
+      selectedSlotInput.value = `${date} • ${panel} • ${select.value}`;
+      showMessage("Slot selected. Add your name and confirm.", "success");
+    }
+
+    function isTaken(date, panel, role, slot) {
+      return bookings.some(item =>
+        item.date === date &&
+        item.panel === panel &&
+        item.role === role &&
+        item.slot === slot
+      );
+    }
+
+    function confirmBooking() {
+      const name = nameInput.value.trim();
+
+      if (!selectedChoice) {
+        showMessage("Choose a slot above.", "error");
+        return;
+      }
+
+      if (!name) {
+        showMessage("Enter your name.", "error");
+        return;
+      }
+
+      const alreadyBooked = bookings.some(item =>
+        item.name.toLowerCase() === name.toLowerCase() && item.role === selectedChoice.role
+      );
+
+      if (alreadyBooked) {
+        showMessage("This name already booked.", "error");
+        return;
+      }
+
+      if (isTaken(selectedChoice.date, selectedChoice.panel, selectedChoice.role, selectedChoice.slot)) {
+        showMessage("Slot already taken.", "error");
+        renderSchedule();
+        return;
+      }
+
+      bookings.push({
+        name: name,
+        role: selectedChoice.role,
+        date: selectedChoice.date,
+        panel: selectedChoice.panel,
+        slot: selectedChoice.slot,
+        bookedAt: new Date().toLocaleString()
+      });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+      nameInput.value = "";
+      selectedChoice = null;
+      selectedSlotInput.value = "";
+      showMessage("Booking confirmed.", "success");
+      renderSchedule();
+    }
+
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = "message " + type;
+    }
+
+    function downloadCSV() {
+      if (bookings.length === 0) {
+        showMessage("No bookings yet.", "error");
+        return;
+      }
+
+      const headers = ["Name", "Role", "Date", "Panel", "Slot", "Booked At"];
+      const rows = bookings.map(item => [item.name, item.role, item.date, item.panel, item.slot, item.bookedAt]);
+      const csv = [headers, ...rows]
+        .map(row => row.map(value => `"${value}"`).join(","))
+        .join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "panel_presentation_bookings.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function resetBookings() {
+      if (!confirm("Clear all bookings?")) return;
+      bookings = [];
+      selectedChoice = null;
+      selectedSlotInput.value = "";
+      localStorage.removeItem(STORAGE_KEY);
+      showMessage("Cleared.", "success");
+      renderSchedule();
+    }
+
+    renderSchedule();
+  </script>
+</body>
+</html>

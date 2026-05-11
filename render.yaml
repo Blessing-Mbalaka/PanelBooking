@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: booking-platform
+    runtime: python
+    pythonVersion: 3.12
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn booking_platform_backend.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: SECRET_KEY
+        scope: project
+        value: generate-a-random-secret-key-or-set-via-render-dashboard
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: localhost,127.0.0.1
+databases:
+  - name: booking-db
+    databaseName: booking_db
+    user: booking_user
+    plan: free

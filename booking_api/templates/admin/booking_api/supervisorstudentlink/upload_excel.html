@@ -1,0 +1,88 @@
+
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Upload Supervisor Mapping | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_label|capfirst }}</a>
+  &rsaquo; <a href="{% url 'admin:booking_api_supervisorstudentlink_changelist' %}">Supervisor Student Links</a>
+  &rsaquo; Upload Excel / CSV
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Upload Supervisor-Student Mapping</h1>
+
+<p style="max-width:600px; color:#444; line-height:1.6;">
+  Upload an <strong>.xlsx</strong> or <strong>.csv</strong> file with the columns below.
+  The <strong>email columns are optional but strongly recommended</strong> — when present, the booking form
+  will validate both the person's full name <em>and</em> email against this table, preventing proxy bookings.
+  <br><br>
+  <strong>Uploading replaces all existing mappings.</strong> You can also add or edit individual rows manually
+  from the list view below.
+</p>
+
+<div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:12px 16px; max-width:640px; margin-bottom:20px;">
+  <strong style="color:#c2410c;">Column headers (first row of your file):</strong>
+  <table style="margin-top:8px; border-collapse:collapse; font-size:13px; width:100%;">
+    <thead>
+      <tr style="background:#fef3c7;">
+        <th style="padding:6px 10px; text-align:left; border:1px solid #fcd34d;">Column</th>
+        <th style="padding:6px 10px; text-align:left; border:1px solid #fcd34d;">Required?</th>
+        <th style="padding:6px 10px; text-align:left; border:1px solid #fcd34d;">Accepted header names</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;"><code>supervisor</code></td>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;">Yes</td>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;"><code>supervisor</code>, <code>supervisor_name</code>, <code>supervisorname</code></td>
+      </tr>
+      <tr>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;"><code>supervisor_email</code></td>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;">Recommended</td>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;"><code>supervisor_email</code>, <code>supervisoremail</code></td>
+      </tr>
+      <tr>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;"><code>student</code></td>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;">Yes</td>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;"><code>student</code>, <code>student_name</code>, <code>studentname</code></td>
+      </tr>
+      <tr>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;"><code>student_email</code></td>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;">Recommended</td>
+        <td style="padding:6px 10px; border:1px solid #fcd34d;"><code>student_email</code>, <code>studentemail</code></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="margin:10px 0 0; font-size:12px; color:#6b7280;">
+    Names must be written as <strong>Firstname Surname</strong> — exactly as the person will enter them on the booking form.
+  </p>
+</div>
+
+<div style="margin-bottom:20px;">
+  <a href="/api/supervisor-links/template/" style="display:inline-block; background:#0284c7; color:white; text-decoration:none; border-radius:6px; padding:10px 16px; font-size:14px; font-weight:600;">
+    📥 Download Template CSV
+  </a>
+</div>
+
+<form method="post" enctype="multipart/form-data" style="max-width:600px;">
+  {% csrf_token %}
+  <div style="margin-bottom:14px;">
+    <label style="display:block; font-weight:700; margin-bottom:6px;" for="file">Excel or CSV file</label>
+    <input type="file" name="file" id="file" accept=".xlsx,.csv"
+           style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:8px;" required />
+  </div>
+  <div style="display:flex; gap:10px;">
+    <input type="submit" value="Upload Mapping"
+           style="background:#f58220; color:white; border:none; border-radius:8px; padding:10px 20px; font-weight:700; cursor:pointer;" />
+    <a href="{% url 'admin:booking_api_supervisorstudentlink_changelist' %}"
+       style="background:#111827; color:white; border-radius:8px; padding:10px 20px; font-weight:700; text-decoration:none; display:inline-block;">
+      Cancel
+    </a>
+  </div>
+</form>
+{% endblock %}

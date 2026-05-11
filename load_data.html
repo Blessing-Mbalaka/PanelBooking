@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Upload Supervisor Mapping</title>
+	<style>
+		:root {
+			--orange: #f58220;
+			--black: #111827;
+			--soft: #fff7ed;
+			--line: #e5e7eb;
+			--green-bg: #dcfce7;
+			--green-text: #166534;
+			--red-bg: #fee2e2;
+			--red-text: #991b1b;
+		}
+
+		* {
+			box-sizing: border-box;
+			font-family: "Segoe UI", Arial, sans-serif;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			background: radial-gradient(circle at top left, rgba(245, 130, 32, 0.24), transparent 35%), #f8fafc;
+			color: var(--black);
+			display: grid;
+			place-items: center;
+			padding: 20px;
+		}
+
+		.card {
+			width: min(760px, 100%);
+			background: white;
+			border-radius: 24px;
+			border-top: 8px solid var(--orange);
+			box-shadow: 0 24px 56px rgba(17, 24, 39, 0.12);
+			padding: 24px;
+		}
+
+		h1 {
+			margin: 0;
+			font-size: clamp(28px, 4vw, 40px);
+			letter-spacing: -1px;
+		}
+
+		p {
+			color: #4b5563;
+			line-height: 1.5;
+		}
+
+		.hint {
+			padding: 12px;
+			border-radius: 12px;
+			background: var(--soft);
+			border: 1px solid #fed7aa;
+			font-size: 14px;
+			font-weight: 700;
+			color: #c2410c;
+			margin-bottom: 14px;
+		}
+
+		label {
+			display: block;
+			font-size: 12px;
+			font-weight: 900;
+			text-transform: uppercase;
+			letter-spacing: 0.6px;
+			color: #4b5563;
+			margin-top: 16px;
+		}
+
+		input[type="file"] {
+			width: 100%;
+			margin-top: 8px;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			padding: 10px;
+			background: white;
+		}
+
+		.actions {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+			margin-top: 18px;
+		}
+
+		button {
+			border: none;
+			border-radius: 12px;
+			padding: 12px;
+			color: white;
+			font-size: 14px;
+			font-weight: 900;
+			cursor: pointer;
+			background: linear-gradient(135deg, var(--orange), #f59e0b);
+		}
+
+		.secondary {
+			background: var(--black);
+		}
+
+		.message {
+			margin-top: 16px;
+			padding: 12px;
+			border-radius: 12px;
+			font-weight: 700;
+			display: none;
+		}
+
+		.message.success {
+			display: block;
+			background: var(--green-bg);
+			color: var(--green-text);
+		}
+
+		.message.error {
+			display: block;
+			background: var(--red-bg);
+			color: var(--red-text);
+		}
+
+		.stats {
+			margin-top: 12px;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+
+		.stat {
+			padding: 10px;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			background: #f9fafb;
+			font-weight: 700;
+			text-align: center;
+		}
+
+		@media (max-width: 600px) {
+			.actions,
+			.stats {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="card">
+		<h1>Upload Supervisor Mapping</h1>
+		<p>Upload an Excel/CSV file that maps each student to a supervisor. Booking validation uses this data to prevent student-supervisor panel conflicts.</p>
+
+		<div class="hint">Required columns: <strong>supervisor</strong> and <strong>student</strong> (or supervisor_name and student_name).</div>
+
+		<label for="mappingFile">Excel or CSV file</label>
+		<input id="mappingFile" type="file" accept=".xlsx,.csv" />
+
+		<div class="actions">
+			<button type="button" onclick="uploadMapping()">Upload Mapping</button>
+			<button type="button" class="secondary" onclick="window.location.href='/'">Back To Booking</button>
+		</div>
+
+		<div id="message" class="message"></div>
+
+		<div class="stats">
+			<div class="stat">Students In System: <span id="studentCount">0</span></div>
+			<div class="stat">Supervisors In System: <span id="supervisorCount">0</span></div>
+		</div>
+	</main>
+
+	<script>
+		function getCsrfToken() {
+			const cookie = document.cookie
+				.split(";")
+				.map(function (entry) { return entry.trim(); })
+				.find(function (entry) { return entry.startsWith("csrftoken="); });
+			return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
+		}
+
+		function showMessage(text, type) {
+			const box = document.getElementById("message");
+			box.textContent = text;
+			box.className = "message " + type;
+		}
+
+		async function loadCounts() {
+			const response = await fetch("/api/system-counts/");
+			const payload = await response.json();
+			document.getElementById("studentCount").textContent = payload.students;
+			document.getElementById("supervisorCount").textContent = payload.supervisors;
+		}
+
+		async function uploadMapping() {
+			const input = document.getElementById("mappingFile");
+			if (!input.files || input.files.length === 0) {
+				showMessage("Please choose a file first.", "error");
+				return;
+			}
+
+			const formData = new FormData();
+			formData.append("file", input.files[0]);
+
+			try {
+				const response = await fetch("/api/supervisor-links/upload/", {
+					method: "POST",
+					headers: {
+						"X-CSRFToken": getCsrfToken(),
+					},
+					body: formData,
+				});
+
+				const payload = await response.json();
+				if (!response.ok) {
+					throw new Error(payload.message || "Upload failed.");
+				}
+
+				document.getElementById("studentCount").textContent = payload.counts.students;
+				document.getElementById("supervisorCount").textContent = payload.counts.supervisors;
+
+				showMessage(
+					"Upload complete. Inserted " + payload.inserted + " rows and skipped " + payload.skipped + " incomplete rows.",
+					"success"
+				);
+			} catch (error) {
+				showMessage(error.message || "Upload failed.", "error");
+			}
+		}
+
+		document.addEventListener("DOMContentLoaded", loadCounts);
+	</script>
+</body>
+</html>
