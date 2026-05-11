@@ -30,7 +30,14 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-cp34=gz-od#&tilm_wkepk8d7=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv(
+        'ALLOWED_HOSTS',
+        '127.0.0.1,localhost,panelbooking.onrender.com'
+    ).split(',')
+    if host.strip()
+]
 
 
 # Application definition
@@ -81,19 +88,30 @@ WSGI_APPLICATION = 'booking_platform_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASE_URL = os.getenv('DATABASE_URL', '')
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'stem_app',
+#         'USER': 'stem_app_user',
+#         'PASSWORD': 'H27a3fiKfi0AXOuSGtKTKSCjpieGRrRT',
+#         'HOST': 'dpg-d4iesnmr433s739v5nq0-a.oregon-postgres.render.com',
+#         'PORT': '5432',
+#     }
+# }
 
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+         'NAME': 'test_xga6',
+         'USER': 'test_xga6_user',
+        'PASSWORD': 'I964dTOGnoEpiTtgG7O7HuH42EPRUjqO',
+         'HOST': 'dpg-d80vd037uimc73fsiofg-a.oregon-postgres.render.com',
+         'PORT': '5432',
+         'OPTIONS': {
+             'sslmode': 'require',
+         },
+     }
+ }
 
 
 # Password validation
