@@ -1,6 +1,6 @@
 """Core booking orchestration logic for API views."""
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from booking_api.models import Booking, Panel, ScheduleDay, Slot, SupervisorStudentLink
@@ -95,17 +95,22 @@ def create_booking(payload: dict) -> dict:
 	if violates_supervisor_student_rule(full_name, data["role"], day, panel):
 		raise BookingConflictError("Supervisors cannot be in the same panel as their student.")
 
-	booking = Booking.objects.create(
-		first_name=data["first_name"],
-		surname=data["surname"],
-		email=data["email"],
-		role=data["role"],
-		supervisor=data["supervisor"],
-		co_supervisor=data["co_supervisor"],
-		day=day,
-		panel=panel,
-		slot=slot,
-	)
+	try:
+		booking = Booking.objects.create(
+			first_name=data["first_name"],
+			surname=data["surname"],
+			email=data["email"],
+			role=data["role"],
+			supervisor=data["supervisor"],
+			co_supervisor=data["co_supervisor"],
+			day=day,
+			panel=panel,
+			slot=slot,
+		)
+	except IntegrityError as error:
+		if "unique_slot_booking" in str(error):
+			raise BookingConflictError("Slot taken.") from error
+		raise
 	return serialize_booking(booking)
 
 

@@ -413,8 +413,8 @@
           <div class="pill"><span id="systemSupervisors">0</span> Supervisors</div>
         </div>
 
-        <label for="firstName">First Name</label>
-        <input type="text" id="firstName" placeholder="First name" autocomplete="given-name" />
+        <label for="firstName">Initials</label>
+        <input type="text" id="firstName" placeholder="Initials" autocomplete="given-name" />
 
         <label for="surname">Surname</label>
         <input type="text" id="surname" placeholder="Surname" autocomplete="family-name" />
@@ -428,12 +428,12 @@
           <option value="supervisor">Supervisor</option>
         </select>
 
-        <div id="supervisorFieldContainer" style="display:none; margin-bottom:1.2rem;">
-          <label for="supervisorSearch">Your Supervisor</label>
-          <input type="text" id="supervisorSearch" placeholder="Type to search…" autocomplete="off" style="width:100%; box-sizing:border-box; padding:.5rem .75rem; border:1px solid var(--border,#ccc); border-radius:6px;" />
-          <div id="supervisorDropdown" style="position:absolute; background:white; border:1px solid #ccc; border-top:none; border-radius:0 0 6px 6px; max-height:200px; overflow-y:auto; width:calc(100% - 1.5rem - 2px); display:none; margin-top:-1px; z-index:100; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
-          </div>
-          <input type="hidden" id="supervisorName" />
+        <div id="supervisorFieldContainer">
+          <label for="supervisor">Supervisor</label>
+          <input type="text" id="supervisor" placeholder="Supervisor name or email" />
+
+          <label for="supervisorName">Co-Supervisor @ mention (Optional)</label>
+          <input type="text" id="supervisorName" placeholder="@co-supervisor name (optional)" />
         </div>
 
         <label for="date">Date</label>
@@ -445,34 +445,13 @@
         <label for="slot" id="slotLabel">Slot</label>
         <select id="slot"></select>
 
-        <button type="button" onclick="bookSlot()">Confirm Booking</button>
+        <button type="button" id="bookButton" onclick="bookSlot()">Confirm Booking</button>
 
         <div id="message" class="message"></div>
 
         <hr style="margin:1.2rem 0;border-color:var(--border,#e0e0e0);" />
 
-        <h3 style="margin:0 0 .6rem;">Cancel My Booking</h3>
-        <p style="font-size:.85rem;color:#666;margin:0 0 .8rem;">
-          Enter the email you booked with. Only one active booking is allowed per person.
-        </p>
-
-        <label for="cancelEmail">Email</label>
-        <input type="email" id="cancelEmail" placeholder="Your booking email" />
-
-        <label for="cancelReason">Reason for cancellation</label>
-        <textarea id="cancelReason" rows="2" placeholder="Briefly explain why you are cancelling…" style="width:100%;box-sizing:border-box;padding:.5rem .75rem;border:1px solid var(--border,#ccc);border-radius:6px;font-size:.9rem;resize:vertical;"></textarea>
-
-        <button type="button" class="secondary" style="margin-top:.5rem;" onclick="lookupAndCancel()">Cancel Booking</button>
-
-        <div id="cancelMessage" class="message"></div>
-
-        <hr style="margin:1.2rem 0;border-color:var(--border,#e0e0e0);" />
-
-        <div class="controls">
-          <button type="button" class="secondary" onclick="window.location.href='/load-data/'">Load Excel</button>
-          <button type="button" class="secondary" onclick="downloadCSV()">Export</button>
-          <button type="button" class="danger" onclick="resetBookings()">Clear</button>
-        </div>
+        <div class="controls"></div>
       </section>
 
       <section class="card">

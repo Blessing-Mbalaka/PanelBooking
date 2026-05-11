@@ -15,8 +15,10 @@ const dateSelect = document.getElementById("date");
 const panelSelect = document.getElementById("panel");
 const slotSelect = document.getElementById("slot");
 const slotLabel = document.getElementById("slotLabel");
+const bookButton = document.getElementById("bookButton");
 const messageBox = document.getElementById("message");
 const cancelMessageBox = document.getElementById("cancelMessage");
+let bookingSubmissionInFlight = false;
 
 async function apiFetch(path, options) {
   const response = await fetch(API_BASE + path, options || {});
@@ -56,6 +58,8 @@ async function startApp() {
     showMessage(error.message || "Failed to load data.", "error");
   }
 
+  supervisorFieldContainer.style.display = "block";
+
   dateSelect.addEventListener("change", function () {
     loadPanels();
     loadSlots();
@@ -64,10 +68,6 @@ async function startApp() {
   panelSelect.addEventListener("change", loadSlots);
   
   roleSelect.addEventListener("change", function () {
-    supervisorFieldContainer.style.display = roleSelect.value === "student" ? "block" : "none";
-    if (roleSelect.value === "supervisor") {
-      supervisorName.value = "";
-    }
     loadSlots();
   });
 }
@@ -156,6 +156,11 @@ function slotIsTaken(date, panel, role, slot) {
 }
 
 async function bookSlot() {
+  if (bookingSubmissionInFlight) {
+    console.warn("Duplicate booking submit ignored.");
+    return;
+  }
+
   const day = getSelectedDay();
   const payload = {
     firstName: firstNameInput.value.trim(),
@@ -169,7 +174,14 @@ async function bookSlot() {
     slot: slotSelect.value,
   };
 
+  bookingSubmissionInFlight = true;
+  if (bookButton) {
+    bookButton.disabled = true;
+    bookButton.textContent = "Booking...";
+  }
+
   try {
+    console.debug("Submitting booking", payload);
     await apiFetch("/bookings/", {
       method: "POST",
       headers: {
@@ -191,6 +203,12 @@ async function bookSlot() {
   } catch (error) {
     showMessage(error.message || "Booking failed.", "error");
     loadSlots();
+  } finally {
+    bookingSubmissionInFlight = false;
+    if (bookButton) {
+      bookButton.disabled = false;
+      bookButton.textContent = "Confirm Booking";
+    }
   }
 }
 

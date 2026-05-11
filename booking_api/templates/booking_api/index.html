@@ -414,8 +414,8 @@
           <div class="pill"><span id="systemSupervisors">0</span> Supervisors</div>
         </div>
 
-        <label for="firstName">First Name</label>
-        <input type="text" id="firstName" placeholder="First name" autocomplete="given-name" />
+        <label for="firstName">Initials</label>
+        <input type="text" id="firstName" placeholder="Initials" autocomplete="given-name" />
 
         <label for="surname">Surname</label>
         <input type="text" id="surname" placeholder="Surname" autocomplete="family-name" />
@@ -429,12 +429,12 @@
           <option value="supervisor">Supervisor</option>
         </select>
 
-        <div id="supervisorFieldContainer" style="display:none;">
+        <div id="supervisorFieldContainer">
           <label for="supervisor">Supervisor</label>
           <input type="text" id="supervisor" placeholder="Supervisor name or email" />
 
-          <label for="supervisorName">Co-Supervisor @ mention</label>
-          <input type="text" id="supervisorName" placeholder="@supervisor name" />
+          <label for="supervisorName">Co-Supervisor @ mention (Optional)</label>
+          <input type="text" id="supervisorName" placeholder="@co-supervisor name (optional)" />
         </div>
 
         <label for="date">Date</label>
@@ -446,7 +446,7 @@
         <label for="slot" id="slotLabel">Slot</label>
         <select id="slot"></select>
 
-        <button type="button" onclick="bookSlot()">Confirm Booking</button>
+        <button type="button" id="bookButton" onclick="bookSlot()">Confirm Booking</button>
 
         <div id="message" class="message"></div>
 
@@ -471,11 +471,7 @@
 
         <hr style="margin:1.2rem 0;border-color:var(--border,#e0e0e0);" />
 
-        <div class="controls">
-          <button type="button" class="secondary" onclick="window.location.href='/load-data/'">Load Excel</button>
-          <button type="button" class="secondary" onclick="downloadCSV()">Export</button>
-          <button type="button" class="danger" onclick="resetBookings()">Clear</button>
-        </div>
+        <div class="controls"></div>
       </section>
 
       <section class="card">
