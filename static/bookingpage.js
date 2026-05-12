@@ -161,13 +161,20 @@ async function bookSlot() {
     return;
   }
 
+  const supervisorValue = supervisor.value.trim();
+  if (!supervisorValue) {
+    showMessage("Please fill in the supervisor field before booking.", "error");
+    supervisor.focus();
+    return;
+  }
+
   const day = getSelectedDay();
   const payload = {
     firstName: firstNameInput.value.trim(),
     surname: surnameInput.value.trim(),
     email: emailInput.value.trim(),
     role: roleSelect.value,
-    supervisor: supervisor.value.trim(),
+    supervisor: supervisorValue,
     coSupervisorName: supervisorName.value.trim(),
     date: day ? day.date : "",
     panel: panelSelect.value,
