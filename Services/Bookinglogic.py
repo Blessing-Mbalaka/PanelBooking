@@ -77,14 +77,15 @@ def create_booking(payload: dict) -> dict:
 	if slot is None:
 		raise BookingValidationError("Choose a valid slot.")
 
-	# One active booking per email + role
-	if Booking.objects.filter(
-		email__iexact=data["email"], role=data["role"], status=Booking.STATUS_ACTIVE
-	).exists():
-		raise BookingConflictError(
-			"You already have an active booking for this role. "
-			"Cancel your existing booking before making a new one."
-		)
+	# One active booking per email + role (students only)
+	if data["role"] == Slot.ROLE_STUDENT:
+		if Booking.objects.filter(
+			email__iexact=data["email"], role=data["role"], status=Booking.STATUS_ACTIVE
+		).exists():
+			raise BookingConflictError(
+				"You already have an active booking for this role. "
+				"Cancel your existing booking before making a new one."
+			)
 
 	if Booking.objects.filter(
 		day=day, panel=panel, role=data["role"], slot=slot, status=Booking.STATUS_ACTIVE

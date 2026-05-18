@@ -83,7 +83,7 @@
 
 		.actions {
 			display: grid;
-			grid-template-columns: 1fr 1fr;
+			grid-template-columns: 1fr 1fr 1fr;
 			gap: 10px;
 			margin-top: 18px;
 		}
@@ -101,6 +101,10 @@
 
 		.secondary {
 			background: var(--black);
+		}
+
+		.danger {
+			background: #dc2626;
 		}
 
 		.message {
@@ -159,6 +163,7 @@
 
 		<div class="actions">
 			<button type="button" onclick="uploadMapping()">Upload Mapping</button>
+			<button type="button" class="danger" onclick="clearAllBookings()">Clear All Bookings</button>
 			<button type="button" class="secondary" onclick="window.location.href='/'">Back To Booking</button>
 		</div>
 
@@ -225,6 +230,31 @@
 				);
 			} catch (error) {
 				showMessage(error.message || "Upload failed.", "error");
+			}
+		}
+
+		async function clearAllBookings() {
+			const confirmed = window.confirm("This will permanently clear all bookings. Continue?");
+			if (!confirmed) {
+				return;
+			}
+
+			try {
+				const response = await fetch("/api/bookings/", {
+					method: "DELETE",
+					headers: {
+						"X-CSRFToken": getCsrfToken(),
+					},
+				});
+
+				const payload = await response.json();
+				if (!response.ok) {
+					throw new Error(payload.message || "Failed to clear bookings.");
+				}
+
+				showMessage("Cleared " + (payload.deleted || 0) + " bookings.", "success");
+			} catch (error) {
+				showMessage(error.message || "Failed to clear bookings.", "error");
 			}
 		}
 
