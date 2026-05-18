@@ -30,9 +30,6 @@ DEFAULT_SCHEDULE = [
 ]
 
 def ensure_default_data() -> None:
-    if ScheduleDay.objects.exists():
-        return
-
     for day_config in DEFAULT_SCHEDULE:
         day, _ = ScheduleDay.objects.get_or_create(date=day_config["date"])
 

@@ -113,6 +113,14 @@ DATABASES = {
      }
  }
 
+if os.getenv('DJANGO_TEST_SQLITE') == '1':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'test.sqlite3',
+        }
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
