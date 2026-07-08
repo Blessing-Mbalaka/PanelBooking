@@ -56,6 +56,18 @@
       z-index: 2;
     }
 
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .header-top .inline-button {
+      margin-right: 5cm;
+    }
+
     .tag {
       display: inline-block;
       background: rgba(245, 130, 32, 0.16);
@@ -169,9 +181,351 @@
 
     .controls {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 10px;
       margin-top: 11px;
+    }
+
+    .inline-button {
+      width: auto;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      box-shadow: none;
+      margin-top: 0;
+    }
+
+    .settings-panel {
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fffaf5;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .date-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .settings-section-title {
+      margin: 16px 0 6px;
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--black);
+    }
+
+    .date-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 13px;
+      border-radius: 16px;
+      background: white;
+      border: 1px solid var(--line);
+    }
+
+    .date-row strong {
+      font-size: 14px;
+    }
+
+    .booking-row {
+      align-items: flex-start;
+    }
+
+    .booking-meta {
+      display: grid;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--grey);
+    }
+
+    .booking-meta strong {
+      color: var(--black);
+    }
+
+    .date-row-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .icon-button {
+      min-width: 44px;
+      width: auto;
+      padding: 8px 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .date-row button {
+      width: auto;
+      margin-top: 0;
+      padding: 8px 12px;
+      border-radius: 12px;
+    }
+
+    .date-row .secondary {
+      background: var(--black);
+    }
+
+    .date-row .danger {
+      background: var(--red);
+    }
+
+    .settings-hint {
+      margin: 8px 0 0;
+      color: var(--grey);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .settings-toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .settings-toolbar button {
+      width: auto;
+      white-space: nowrap;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 20;
+    }
+
+    .modal-backdrop.hidden {
+      display: none;
+    }
+
+    .modal {
+      width: min(760px, 100%);
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      background: white;
+      border-radius: 26px;
+      padding: 22px;
+      box-shadow: 0 28px 60px rgba(17, 24, 39, 0.24);
+    }
+
+    .modal-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .modal-top h3 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .modal-close {
+      width: auto;
+      margin-top: 0;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      color: var(--black);
+      box-shadow: none;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .editor-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fffaf5;
+    }
+
+    .editor-card h4 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .editor-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .editor-card-top h4 {
+      margin: 0;
+    }
+
+    .editor-tools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ghost-button {
+      width: auto;
+      margin-top: 0;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #fff;
+      color: var(--black);
+      border: 1px solid var(--line);
+      box-shadow: none;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .editor-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .editor-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .time-row {
+      display: grid;
+      grid-template-columns: auto 1fr 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .draggable-row {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: white;
+    }
+
+    .draggable-row.dragging {
+      opacity: 0.55;
+      border-style: dashed;
+    }
+
+    .drag-handle {
+      width: auto;
+      margin-top: 0;
+      padding: 12px 10px;
+      border-radius: 14px;
+      background: #111827;
+      box-shadow: none;
+      font-size: 16px;
+      cursor: grab;
+    }
+
+    .row-actions {
+      display: flex;
+      align-items: center;
+    }
+
+    .mini-label {
+      display: block;
+      margin: 0 0 4px;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #6b7280;
+    }
+
+    .row-remove {
+      width: auto;
+      margin-top: 0;
+      min-width: 44px;
+      padding: 11px 12px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: none;
+      font-size: 16px;
+    }
+
+    .row-add {
+      margin-top: 12px;
+      background: linear-gradient(135deg, #111827, #374151);
+      box-shadow: none;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .modal-actions button {
+      width: auto;
+      margin-top: 0;
+      padding-left: 18px;
+      padding-right: 18px;
+    }
+
+    .modal-message {
+      margin-top: 14px;
+    }
+
+    .toast-stack {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 40;
+      display: grid;
+      gap: 10px;
+      width: min(360px, calc(100vw - 36px));
+    }
+
+    .toast {
+      padding: 14px 16px;
+      border-radius: 18px;
+      color: white;
+      font-weight: 800;
+      box-shadow: 0 18px 40px rgba(17, 24, 39, 0.18);
+      animation: toast-in 180ms ease-out;
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, #15803d, #16a34a);
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, #b91c1c, #dc2626);
+    }
+
+    @keyframes toast-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .secondary {
@@ -388,9 +742,29 @@
       .controls {
         grid-template-columns: 1fr;
       }
+      .settings-toolbar,
+      .modal-grid,
+      .time-row,
+      .editor-row {
+        grid-template-columns: 1fr;
+      }
+      .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .header-top .inline-button {
+        margin-right: 0;
+      }
+      .editor-card-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
       .day-title {
         flex-direction: column;
         align-items: flex-start;
+      }
+      .modal-actions {
+        flex-direction: column;
       }
     }
   </style>
@@ -398,7 +772,10 @@
 <body>
   <header>
     <div class="header-inner">
-      <div class="tag">UJ Panel Schedule</div>
+      <div class="header-top">
+        <div class="tag">UJ Panel Schedule</div>
+        <button type="button" id="settingsButton" class="secondary inline-button">Settings</button>
+      </div>
       <h1>Panel Booking</h1>
       <p class="subtitle">Select date. Select panel. Select slot.</p>
     </div>
@@ -411,7 +788,7 @@
 
         <div class="quick-row">
           <div class="pill"><span id="systemStudents">0</span> Students</div>
-          <div class="pill"><span id="systemSupervisors">0</span> Supervisors</div>
+          <div class="pill"><span id="configuredDatesCount">0</span> Dates</div>
         </div>
 
         <label for="firstName">Initials</label>
@@ -423,6 +800,7 @@
         <label for="email">Email</label>
         <input type="email" id="email" placeholder="university@email.ac.za" autocomplete="email" />
 
+        <!-- Supervisor-specific booking fields disabled for the student-only flow.
         <label for="role">Type</label>
         <select id="role">
           <option value="student">Student</option>
@@ -436,6 +814,7 @@
           <label for="supervisorName">Co-Supervisor @ mention (Optional)</label>
           <input type="text" id="supervisorName" placeholder="@co-supervisor name (optional)" />
         </div>
+        -->
 
         <label for="date">Date</label>
         <select id="date"></select>
@@ -471,7 +850,36 @@
 
         <hr style="margin:1.2rem 0;border-color:var(--border,#e0e0e0);" />
 
-        <div class="controls"></div>
+        <div class="controls">
+          <div id="settingsPanel" class="settings-panel hidden">
+            <h3 style="margin:0 0 8px;">Schedule Settings</h3>
+            <p class="settings-hint">Unlock with the settings password, then add or remove available booking dates. Each new date keeps the same panel and student slot structure.</p>
+
+            <div id="settingsLocked">
+              <label for="settingsPassword">Password</label>
+              <input type="password" id="settingsPassword" placeholder="Enter settings password" />
+              <button type="button" id="unlockSettingsButton" class="secondary">Unlock Settings</button>
+            </div>
+
+            <div id="settingsManager" class="hidden">
+              <div class="settings-toolbar">
+                <div>
+                  <label for="scheduleDateInput">Configure booking date</label>
+                  <input type="date" id="scheduleDateInput" />
+                </div>
+                <button type="button" id="openDateEditorButton">Create or Edit</button>
+              </div>
+              <p class="settings-hint">Use the pencil emoji to edit a specific date. Inside the modal you can add or remove panels individually and build time slots using from/to time pickers.</p>
+              <div id="settingsDatesList" class="date-list"></div>
+
+              <div class="settings-section-title">Active Bookings</div>
+              <p class="settings-hint">Cancel an active booking from settings when you need to free a slot.</p>
+              <div id="activeBookingsList" class="date-list"></div>
+            </div>
+
+            <div id="settingsMessage" class="message"></div>
+          </div>
+        </div>
       </section>
 
       <section class="card">
@@ -483,8 +891,8 @@
             Students
           </div>
           <div class="summary-box">
-            <strong id="totalSupervisors">0/0</strong>
-            Supervisors
+            <strong id="totalDates">0</strong>
+            Configured Dates
           </div>
         </div>
 
@@ -492,6 +900,50 @@
       </section>
     </div>
   </main>
+
+  <div id="dateEditorModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dateEditorTitle">
+      <div class="modal-top">
+        <div>
+          <h3 id="dateEditorTitle">Edit Date Settings</h3>
+          <p id="dateEditorSubtitle" class="settings-hint">Configure the panels and time slots for this date.</p>
+        </div>
+        <button type="button" id="closeDateEditorButton" class="modal-close">Close</button>
+      </div>
+
+      <div class="modal-grid">
+        <section class="editor-card">
+          <div class="editor-card-top">
+            <h4>Panels</h4>
+            <div class="editor-tools">
+              <button type="button" id="sortPanelsButton" class="ghost-button">Sort A-Z</button>
+            </div>
+          </div>
+          <div id="panelEditorList" class="editor-list"></div>
+          <button type="button" id="addPanelButton" class="row-add">+ Add Panel</button>
+        </section>
+
+        <section class="editor-card">
+          <div class="editor-card-top">
+            <h4>Time Slots</h4>
+            <div class="editor-tools">
+              <button type="button" id="sortSlotsButton" class="ghost-button">Sort by Time</button>
+            </div>
+          </div>
+          <div id="slotEditorList" class="editor-list"></div>
+          <button type="button" id="addSlotButton" class="row-add">+ Add Time Slot</button>
+        </section>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="saveDateConfigButton">Save Date Configuration</button>
+      </div>
+
+      <div id="dateEditorMessage" class="message modal-message"></div>
+    </div>
+  </div>
+
+  <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
 
   <script src="{% static 'bookingpage.js' %}"></script>
 </body>

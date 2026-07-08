@@ -115,6 +115,14 @@ def create_booking(payload: dict) -> dict:
 	return serialize_booking(booking)
 
 
+def _cancel_active_booking(booking: Booking, reason: str) -> dict:
+	booking.status = Booking.STATUS_CANCELLED
+	booking.cancellation_reason = reason
+	booking.cancelled_at = timezone.now()
+	booking.save(update_fields=["status", "cancellation_reason", "cancelled_at"])
+	return serialize_booking(booking)
+
+
 @transaction.atomic
 def cancel_booking(booking_id: int, email: str, reason: str) -> dict:
 	"""
@@ -137,9 +145,19 @@ def cancel_booking(booking_id: int, email: str, reason: str) -> dict:
 	if booking.email.lower() != email:
 		raise BookingConflictError("Email does not match the booking record.")
 
-	booking.status = Booking.STATUS_CANCELLED
-	booking.cancellation_reason = reason
-	booking.cancelled_at = timezone.now()
-	booking.save(update_fields=["status", "cancellation_reason", "cancelled_at"])
-	return serialize_booking(booking)
+	return _cancel_active_booking(booking, reason)
+
+
+@transaction.atomic
+def cancel_booking_from_settings(booking_id: int, reason: str = "Cancelled from settings.") -> dict:
+	reason = (reason or "").strip() or "Cancelled from settings."
+
+	try:
+		booking = Booking.objects.select_related("day", "panel", "slot").get(
+			pk=booking_id, status=Booking.STATUS_ACTIVE
+		)
+	except Booking.DoesNotExist:
+		raise BookingValidationError("Booking not found or already cancelled.")
+
+	return _cancel_active_booking(booking, reason)
 

@@ -14,12 +14,13 @@ class ScheduleDay(models.Model):
 class Panel(models.Model):
 	day = models.ForeignKey(ScheduleDay, on_delete=models.CASCADE, related_name="panels")
 	name = models.CharField(max_length=100)
+	sort_order = models.PositiveIntegerField(default=0)
 
 	class Meta:
 		constraints = [
 			models.UniqueConstraint(fields=["day", "name"], name="unique_panel_per_day"),
 		]
-		ordering = ["day__date", "name"]
+		ordering = ["day__date", "sort_order", "name"]
 
 	def __str__(self):
 		return f"{self.day.date} - {self.name}"
@@ -94,8 +95,8 @@ class Booking(models.Model):
 	surname = models.CharField(max_length=150)
 	email = models.EmailField(max_length=254)
 	role = models.CharField(max_length=20, choices=ROLE_CHOICES)
-	supervisor = models.CharField(max_length=255, blank=True, default="")
-	co_supervisor = models.CharField(max_length=255, blank=True, default="")  # Co-supervisor
+	supervisor = models.CharField(max_length=255, null=True, blank=True, default="")
+	co_supervisor = models.CharField(max_length=255, null=True, blank=True, default="")
 	day = models.ForeignKey(ScheduleDay, on_delete=models.CASCADE, related_name="bookings")
 	panel = models.ForeignKey(Panel, on_delete=models.CASCADE, related_name="bookings")
 	slot = models.ForeignKey(Slot, on_delete=models.CASCADE, related_name="bookings")

@@ -99,26 +99,35 @@ WSGI_APPLICATION = 'booking_platform_backend.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-         'NAME': 'test_xga6',
-         'USER': 'test_xga6_user',
-        'PASSWORD': 'I964dTOGnoEpiTtgG7O7HuH42EPRUjqO',
-         'HOST': 'dpg-d80vd037uimc73fsiofg-a.oregon-postgres.render.com',
-         'PORT': '5432',
-         'OPTIONS': {
-             'sslmode': 'require',
-         },
-     }
- }
 
-if os.getenv('DJANGO_TEST_SQLITE') == '1':
-    DATABASES = {
+
+
+
+
+DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'test.sqlite3',
         }
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#          'NAME': 'test_xga6',
+#          'USER': 'test_xga6_user',
+#         'PASSWORD': 'I964dTOGnoEpiTtgG7O7HuH42EPRUjqO',
+#          'HOST': 'dpg-d80vd037uimc73fsiofg-a.oregon-postgres.render.com',
+#          'PORT': '5432',
+#          'OPTIONS': {
+#              'sslmode': 'require',
+#          },
+#      }
+#  }
+
+# if os.getenv('DJANGO_TEST_SQLITE') == '1':
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'test.sqlite3',
+#         }
     }
 
 
@@ -162,5 +171,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+#here we say use param 1 or default value if param 1 is not set.
+SCHEDULE_SETTINGS_PASSWORD = os.getenv('SCHEDULE_SETTINGS_PASSWORD', 'uj-booking-settings')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

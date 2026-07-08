@@ -50,7 +50,7 @@ class ScheduleDayAdmin(admin.ModelAdmin):
 
 @admin.register(Panel)
 class PanelAdmin(admin.ModelAdmin):
-    list_display = ("id", "day", "name")
+    list_display = ("id", "day", "name", "sort_order")
     list_filter = ("day",)
 
 

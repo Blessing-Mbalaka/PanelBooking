@@ -21,7 +21,7 @@ def validate_booking_payload(payload: dict) -> dict:
 	first_name = normalize_name(payload.get("firstName", "") or payload.get("first_name", ""))
 	surname = normalize_name(payload.get("surname", ""))
 	email = (payload.get("email", "") or "").strip().lower()
-	role = (payload.get("role", "") or "").strip().lower()
+	role = (payload.get("role", "student") or "student").strip().lower()
 	supervisor = (payload.get("supervisor", "") or "").strip()
 	co_supervisor_name = (payload.get("coSupervisorName", "") or payload.get("co_supervisor_name", "")).strip()
 	date_value = (payload.get("date", "") or "").strip()

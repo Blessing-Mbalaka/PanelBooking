@@ -1,4 +1,4 @@
-supervisor,student
-Supervisor A,Student A
-Supervisor A,Student B
-Supervisor B,Student C
+supervisor,supervisor_email,student,student_email
+Dr Jane Smith,j.smith@uj.ac.za,Thabo Nkosi,thabo.nkosi@student.uj.ac.za
+Dr Jane Smith,j.smith@uj.ac.za,Lerato Dlamini,lerato.dlamini@student.uj.ac.za
+Prof John Doe,j.doe@uj.ac.za,Sipho Mokoena,sipho.mokoena@student.uj.ac.za

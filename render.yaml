@@ -10,7 +10,7 @@ services:
         scope: project
         value: generate-a-random-secret-key-or-set-via-render-dashboard
       - key: DEBUG
-        value: False
+        value: Fa
       - key: ALLOWED_HOSTS
         value: localhost,127.0.0.1,panelbooking.onrender.com
 databases:

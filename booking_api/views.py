@@ -1,8 +1,10 @@
 import json
 import csv
+from datetime import date
 from io import TextIOWrapper
 from pathlib import Path
 
+from django.conf import settings
 from openpyxl import load_workbook
 
 from django.http import JsonResponse, FileResponse
@@ -10,12 +12,19 @@ from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
-from Services.Bookinglogic import BookingConflictError, cancel_booking, clear_bookings, create_booking, list_bookings
+from Services.Bookinglogic import (
+	BookingConflictError,
+	cancel_booking,
+	cancel_booking_from_settings,
+	clear_bookings,
+	create_booking,
+	list_bookings,
+)
 from Services.count import get_system_counts
 from Services.form import BookingValidationError
 from Services.reccomendation import recommend_supervisor_slots
-from booking_api.bootstrap import ensure_default_data
-from booking_api.models import Panel, ScheduleDay, Slot, SupervisorStudentLink, Supervisor
+from booking_api.bootstrap import create_schedule_day_config
+from booking_api.models import Booking, Panel, ScheduleDay, Slot, SupervisorStudentLink, Supervisor
 
 
 @ensure_csrf_cookie
@@ -30,8 +39,6 @@ def load_data_page(request):
 
 @require_http_methods(["GET"])
 def schedule_config(request):
-	ensure_default_data()
-
 	payload = []
 	days = ScheduleDay.objects.prefetch_related("panels", "slots").all()
 	for day in days:
@@ -60,10 +67,123 @@ def schedule_config(request):
 	return JsonResponse(payload, safe=False)
 
 
+def _parse_json_request(request):
+	try:
+		return json.loads(request.body.decode("utf-8") or "{}")
+	except json.JSONDecodeError as error:
+		raise BookingValidationError("Invalid JSON payload.") from error
+
+
+def _require_settings_password(payload: dict) -> None:
+	password = (payload.get("password") or "").strip()
+	if password != settings.SCHEDULE_SETTINGS_PASSWORD:
+		raise BookingValidationError("Incorrect settings password.")
+
+
+def _normalize_schedule_items(raw_value, field_name: str) -> list[str]:
+	if isinstance(raw_value, list):
+		items = raw_value
+	elif isinstance(raw_value, str):
+		items = raw_value.splitlines()
+	else:
+		items = []
+
+	normalized = []
+	seen = set()
+	for item in items:
+		value = str(item or "").strip()
+		key = value.lower()
+		if not value or key in seen:
+			continue
+		seen.add(key)
+		normalized.append(value)
+
+	if not normalized:
+		raise BookingValidationError(f"Add at least one {field_name}.")
+
+	return normalized
+
+
+@require_http_methods(["POST"])
+def unlock_settings(request):
+	try:
+		payload = _parse_json_request(request)
+		_require_settings_password(payload)
+	except BookingValidationError as error:
+		return JsonResponse({"message": str(error)}, status=400)
+
+	return JsonResponse({"ok": True})
+
+
+@require_http_methods(["POST", "DELETE"])
+def schedule_days(request):
+	try:
+		payload = _parse_json_request(request)
+		_require_settings_password(payload)
+	except BookingValidationError as error:
+		return JsonResponse({"message": str(error)}, status=400)
+
+	date_value = (payload.get("date") or "").strip()
+	if not date_value:
+		return JsonResponse({"message": "Choose a date."}, status=400)
+
+	try:
+		selected_date = date.fromisoformat(date_value)
+	except ValueError:
+		return JsonResponse({"message": "Choose a valid date."}, status=400)
+
+	if request.method == "POST":
+		try:
+			panels = _normalize_schedule_items(payload.get("panels"), "panel")
+			student_slots = _normalize_schedule_items(payload.get("studentSlots"), "time slot")
+		except BookingValidationError as error:
+			return JsonResponse({"message": str(error)}, status=400)
+
+		day = ScheduleDay.objects.prefetch_related("panels", "slots").filter(date=selected_date).first()
+		if day is not None:
+			removed_panels = set(day.panels.values_list("name", flat=True)) - set(panels)
+			removed_slots = set(
+				day.slots.filter(role=Slot.ROLE_STUDENT).values_list("label", flat=True)
+			) - set(student_slots)
+
+			if removed_panels and Booking.objects.filter(
+				day=day,
+				status=Booking.STATUS_ACTIVE,
+				panel__name__in=removed_panels,
+			).exists():
+				return JsonResponse({"message": "Cannot remove a panel that already has bookings."}, status=400)
+
+			if removed_slots and Booking.objects.filter(
+				day=day,
+				status=Booking.STATUS_ACTIVE,
+				role=Slot.ROLE_STUDENT,
+				slot__label__in=removed_slots,
+			).exists():
+				return JsonResponse({"message": "Cannot remove a time slot that already has bookings."}, status=400)
+
+		day = create_schedule_day_config(selected_date, panels=panels, student_slots=student_slots)
+		return JsonResponse(
+			{
+				"date": day.date.isoformat(),
+				"displayDate": day.date.strftime("%A %d %b"),
+				"panels": panels,
+				"studentSlots": student_slots,
+			},
+			status=201,
+		)
+
+	day = ScheduleDay.objects.filter(date=selected_date).first()
+	if day is None:
+		return JsonResponse({"message": "That date is not configured."}, status=404)
+	if Booking.objects.filter(day=day, status=Booking.STATUS_ACTIVE).exists():
+		return JsonResponse({"message": "Remove bookings for this date before deleting it."}, status=400)
+
+	day.delete()
+	return JsonResponse({"deleted": date_value})
+
+
 @require_http_methods(["GET", "POST", "DELETE"])
 def bookings(request):
-	ensure_default_data()
-
 	if request.method == "GET":
 		return JsonResponse(list_bookings(), safe=False)
 
@@ -86,7 +206,6 @@ def bookings(request):
 
 @require_http_methods(["GET"])
 def system_counts(request):
-	ensure_default_data()
 	return JsonResponse(get_system_counts())
 
 
@@ -234,10 +353,24 @@ def cancel_booking_view(request, booking_id):
 	return JsonResponse(updated)
 
 
+@require_http_methods(["POST"])
+def admin_cancel_booking_view(request, booking_id):
+	try:
+		payload = _parse_json_request(request)
+		_require_settings_password(payload)
+	except BookingValidationError as error:
+		return JsonResponse({"message": str(error)}, status=400)
+
+	try:
+		updated = cancel_booking_from_settings(booking_id, payload.get("reason") or "")
+	except BookingValidationError as error:
+		return JsonResponse({"message": str(error)}, status=400)
+
+	return JsonResponse(updated)
+
+
 @require_http_methods(["GET"])
 def recommendations(request):
-	ensure_default_data()
-
 	supervisor_name = (request.GET.get("supervisor") or "").strip()
 	date_value = (request.GET.get("date") or "").strip()
 	panel_name = (request.GET.get("panel") or "").strip()
