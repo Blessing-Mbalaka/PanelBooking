@@ -19,6 +19,7 @@ from Services.Bookinglogic import (
 	clear_bookings,
 	create_booking,
 	list_bookings,
+	normalize_booking_type,
 )
 from Services.count import get_system_counts
 from Services.form import BookingValidationError
@@ -29,7 +30,44 @@ from booking_api.models import Booking, Panel, ScheduleDay, Slot, SupervisorStud
 
 @ensure_csrf_cookie
 def index(request):
-	return render(request, "booking_api/index.html")
+	return render(
+		request,
+		"booking_api/index.html",
+		{
+			"brand_name": "Syndicate",
+			"brand_tag": "Syndicate Panel Schedule",
+			"page_title": "Syndicate Panel Booking",
+			"booking_type": "syndicate",
+		},
+	)
+
+
+@ensure_csrf_cookie
+def summative_index(request):
+	return render(
+		request,
+		"booking_api/index.html",
+		{
+			"brand_name": "Summative",
+			"brand_tag": "Summative Panel Schedule",
+			"page_title": "Summative Panel Booking",
+			"booking_type": "summative",
+		},
+	)
+
+
+@ensure_csrf_cookie
+def group_index(request):
+	return render(
+		request,
+		"booking_api/index.html",
+		{
+			"brand_name": "Group",
+			"brand_tag": "Group Panel Schedule",
+			"page_title": "Group Panel Booking",
+			"booking_type": "group",
+		},
+	)
 
 
 @ensure_csrf_cookie
@@ -185,7 +223,8 @@ def schedule_days(request):
 @require_http_methods(["GET", "POST", "DELETE"])
 def bookings(request):
 	if request.method == "GET":
-		return JsonResponse(list_bookings(), safe=False)
+		booking_type = normalize_booking_type(request.GET.get("bookingType"))
+		return JsonResponse(list_bookings(booking_type=booking_type), safe=False)
 
 	if request.method == "DELETE":
 		deleted_count = clear_bookings()
@@ -403,22 +442,26 @@ def search_supervisors(request):
 def export_bookings(request):
 	"""Export all active bookings as CSV."""
 	from django.http import HttpResponse
-	from Services.count import serialize_booking
 	from booking_api.models import Booking
 
+	booking_type = normalize_booking_type(request.GET.get("bookingType"))
 	bookings = Booking.objects.filter(status=Booking.STATUS_ACTIVE).order_by("-booked_at")
+	if booking_type:
+		bookings = bookings.filter(booking_type=booking_type)
 	
 	response = HttpResponse(content_type="text/csv")
-	response["Content-Disposition"] = 'attachment; filename="bookings_export.csv"'
+	filename = f"{booking_type or 'all'}_bookings_export.csv"
+	response["Content-Disposition"] = f'attachment; filename="{filename}"'
 	
 	writer = csv.writer(response)
-	writer.writerow(["First Name", "Surname", "Email", "Role", "Supervisor", "Co-Supervisor", "Date", "Panel", "Slot", "Booked At", "Status"])
+	writer.writerow(["First Name", "Surname", "Email", "Booking Type", "Role", "Supervisor", "Co-Supervisor", "Date", "Panel", "Slot", "Booked At", "Status"])
 	
 	for booking in bookings:
 		writer.writerow([
 			booking.first_name,
 			booking.surname,
 			booking.email,
+			booking.booking_type,
 			booking.role,
 			booking.supervisor,
 			booking.co_supervisor,

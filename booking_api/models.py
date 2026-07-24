@@ -80,6 +80,15 @@ class Supervisor(models.Model):
 
 
 class Booking(models.Model):
+	BOOKING_TYPE_SYNDICATE = "syndicate"
+	BOOKING_TYPE_SUMMATIVE = "summative"
+	BOOKING_TYPE_GROUP = "group"
+	BOOKING_TYPE_CHOICES = [
+		(BOOKING_TYPE_SYNDICATE, "Syndicate"),
+		(BOOKING_TYPE_SUMMATIVE, "Summative"),
+		(BOOKING_TYPE_GROUP, "Group"),
+	]
+
 	ROLE_STUDENT = Slot.ROLE_STUDENT
 	ROLE_SUPERVISOR = Slot.ROLE_SUPERVISOR
 	ROLE_CHOICES = Slot.ROLE_CHOICES
@@ -94,6 +103,11 @@ class Booking(models.Model):
 	first_name = models.CharField(max_length=150)
 	surname = models.CharField(max_length=150)
 	email = models.EmailField(max_length=254)
+	booking_type = models.CharField(
+		max_length=20,
+		choices=BOOKING_TYPE_CHOICES,
+		default=BOOKING_TYPE_SYNDICATE,
+	)
 	role = models.CharField(max_length=20, choices=ROLE_CHOICES)
 	supervisor = models.CharField(max_length=255, null=True, blank=True, default="")
 	co_supervisor = models.CharField(max_length=255, null=True, blank=True, default="")
@@ -108,8 +122,13 @@ class Booking(models.Model):
 	class Meta:
 		constraints = [
 			models.UniqueConstraint(
-				fields=["day", "panel", "role", "slot"],
+				fields=["day", "panel", "role", "slot", "booking_type"],
 				name="unique_slot_booking",
+				condition=models.Q(status="active"),
+			),
+			models.UniqueConstraint(
+				fields=["email", "role", "booking_type"],
+				name="unique_active_booking_per_email_role_type",
 				condition=models.Q(status="active"),
 			),
 		]
@@ -120,4 +139,4 @@ class Booking(models.Model):
 		return f"{self.first_name} {self.surname}"
 
 	def __str__(self):
-		return f"{self.full_name} ({self.role}) {self.day.date} {self.panel.name} {self.slot.label}"
+		return f"{self.full_name} ({self.booking_type}, {self.role}) {self.day.date} {self.panel.name} {self.slot.label}"

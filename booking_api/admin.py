@@ -1,12 +1,15 @@
 import csv
+from datetime import date
 from io import TextIOWrapper
 
 from django.contrib import admin, messages
+from django import forms
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import path
 from openpyxl import load_workbook
 
+from booking_api.bootstrap import DEFAULT_BULK_STUDENT_SLOTS, create_schedule_day_config
 from booking_api.models import Booking, Panel, ScheduleDay, Slot, SupervisorStudentLink, Supervisor
 
 
@@ -43,9 +46,126 @@ def _rows_from_csv(file_obj):
         yield {_normalize_header(k): v for k, v in raw.items()}
 
 
+class BulkScheduleSeedForm(forms.Form):
+    panel_name = forms.CharField(
+        label="Panel name",
+        max_length=100,
+        initial="Panel 1",
+        help_text="This panel name will be created for every selected date.",
+    )
+    dates = forms.CharField(
+        label="Dates",
+        widget=forms.Textarea(attrs={"rows": 8, "placeholder": "2026-08-03\n2026-08-04\n2026-08-05"}),
+        help_text="Enter one ISO date per line, or separate multiple dates with commas.",
+    )
+
+    def clean_dates(self):
+        raw_value = self.cleaned_data["dates"]
+        tokens = raw_value.replace(",", "\n").splitlines()
+        parsed_dates = []
+        seen = set()
+
+        for token in tokens:
+            value = token.strip()
+            if not value:
+                continue
+            try:
+                parsed_date = date.fromisoformat(value)
+            except ValueError as error:
+                raise forms.ValidationError(f"Use YYYY-MM-DD format. Invalid value: {value}") from error
+
+            if parsed_date < date.today():
+                raise forms.ValidationError(f"Past dates are not allowed here: {value}")
+
+            if parsed_date in seen:
+                continue
+
+            seen.add(parsed_date)
+            parsed_dates.append(parsed_date)
+
+        if not parsed_dates:
+            raise forms.ValidationError("Add at least one valid date.")
+
+        return parsed_dates
+
+
 @admin.register(ScheduleDay)
 class ScheduleDayAdmin(admin.ModelAdmin):
     list_display = ("id", "date")
+    changelist_template = "admin/booking_api/scheduleday/change_list.html"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        extra = [
+            path(
+                "bulk-seed/",
+                self.admin_site.admin_view(self.bulk_seed_view),
+                name="booking_api_scheduleday_bulk_seed",
+            ),
+        ]
+        return extra + urls
+
+    def bulk_seed_view(self, request):
+        form = BulkScheduleSeedForm(request.POST or None)
+
+        if request.method == "POST" and form.is_valid():
+            panel_name = form.cleaned_data["panel_name"].strip()
+            selected_dates = form.cleaned_data["dates"]
+            created_count = 0
+            updated_count = 0
+            skipped_dates = []
+
+            for selected_date in selected_dates:
+                existing_day = ScheduleDay.objects.filter(date=selected_date).first()
+                if existing_day and Booking.objects.filter(
+                    day=existing_day,
+                    status=Booking.STATUS_ACTIVE,
+                ).exists():
+                    skipped_dates.append(selected_date.isoformat())
+                    continue
+
+                create_schedule_day_config(
+                    selected_date,
+                    panels=[panel_name],
+                    student_slots=DEFAULT_BULK_STUDENT_SLOTS,
+                )
+
+                if existing_day is None:
+                    created_count += 1
+                else:
+                    updated_count += 1
+
+            if created_count or updated_count:
+                summary = (
+                    f"Bulk seed complete: {created_count} created, {updated_count} updated. "
+                    f"Each date now has panel '{panel_name}' and half-hour slots from 09:00 to 18:00."
+                )
+                self.message_user(request, summary, level=messages.SUCCESS)
+
+            if skipped_dates:
+                self.message_user(
+                    request,
+                    "Skipped dates with active bookings: " + ", ".join(skipped_dates),
+                    level=messages.WARNING,
+                )
+
+            if not created_count and not updated_count and skipped_dates:
+                return redirect("..")
+
+            return redirect("..")
+
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Bulk Seed Schedule Dates",
+            "opts": self.model._meta,
+            "form": form,
+            "slot_range": f"{DEFAULT_BULK_STUDENT_SLOTS[0]} to {DEFAULT_BULK_STUDENT_SLOTS[-1]}",
+        }
+        return TemplateResponse(
+            request,
+            "admin/booking_api/scheduleday/bulk_seed.html",
+            context,
+        )
 
 
 @admin.register(Panel)
@@ -147,8 +267,8 @@ class SupervisorAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-	list_display = ("id", "first_name", "surname", "email", "role", "supervisor", "get_co_supervisor", "day", "panel", "slot", "status", "booked_at")
-	list_filter = ("day", "role", "panel", "status")
+	list_display = ("id", "first_name", "surname", "email", "booking_type", "role", "supervisor", "get_co_supervisor", "day", "panel", "slot", "status", "booked_at")
+	list_filter = ("booking_type", "day", "role", "panel", "status")
 	search_fields = ("first_name", "surname", "email", "supervisor", "co_supervisor")
 	readonly_fields = ("booked_at", "cancelled_at")
 

@@ -1,4 +1,5 @@
 const API_BASE = "/api";
+const bookingType = document.body.dataset.bookingType || "syndicate";
 
 let scheduleConfig = [];
 let bookings = [];
@@ -23,6 +24,7 @@ const panelSelect = document.getElementById("panel");
 const slotSelect = document.getElementById("slot");
 const slotLabel = document.getElementById("slotLabel");
 const bookButton = document.getElementById("bookButton");
+const printButton = document.getElementById("printButton");
 const messageBox = document.getElementById("message");
 const settingsButton = document.getElementById("settingsButton");
 const settingsPanel = document.getElementById("settingsPanel");
@@ -95,6 +97,11 @@ function bindEvents() {
   });
 
   panelSelect.addEventListener("change", loadSlots);
+  if (printButton) {
+    printButton.addEventListener("click", function () {
+      window.print();
+    });
+  }
   settingsButton.addEventListener("click", toggleSettingsPanel);
   unlockSettingsButton.addEventListener("click", unlockSettings);
   openDateEditorButton.addEventListener("click", function () {
@@ -125,7 +132,7 @@ function bindEvents() {
 async function refreshData() {
   const data = await Promise.all([
     apiFetch("/schedule/"),
-    apiFetch("/bookings/"),
+    apiFetch("/bookings/?bookingType=" + encodeURIComponent(bookingType)),
     apiFetch("/system-counts/"),
   ]);
 
@@ -248,6 +255,7 @@ async function bookSlot() {
     firstName: firstNameInput.value.trim(),
     surname: surnameInput.value.trim(),
     email: emailInput.value.trim(),
+    bookingType: bookingType,
     role: "student",
     supervisor: "",
     coSupervisorName: "",

@@ -21,6 +21,7 @@ def validate_booking_payload(payload: dict) -> dict:
 	first_name = normalize_name(payload.get("firstName", "") or payload.get("first_name", ""))
 	surname = normalize_name(payload.get("surname", ""))
 	email = (payload.get("email", "") or "").strip().lower()
+	booking_type = (payload.get("bookingType", "syndicate") or "syndicate").strip().lower()
 	role = (payload.get("role", "student") or "student").strip().lower()
 	supervisor = (payload.get("supervisor", "") or "").strip()
 	co_supervisor_name = (payload.get("coSupervisorName", "") or payload.get("co_supervisor_name", "")).strip()
@@ -40,6 +41,9 @@ def validate_booking_payload(payload: dict) -> dict:
 	if role not in {"student", "supervisor"}:
 		raise BookingValidationError("Select a valid role.")
 
+	if booking_type not in {"syndicate", "summative", "group"}:
+		raise BookingValidationError("Select a valid booking type.")
+
 	if not date_value:
 		raise BookingValidationError("Select a date.")
 
@@ -53,6 +57,7 @@ def validate_booking_payload(payload: dict) -> dict:
 		"first_name": first_name,
 		"surname": surname,
 		"email": email,
+		"booking_type": booking_type,
 		"role": role,
 		"supervisor": supervisor,
 		"co_supervisor": co_supervisor_name,

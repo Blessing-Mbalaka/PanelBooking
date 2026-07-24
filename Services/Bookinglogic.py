@@ -9,14 +9,33 @@ from Services.form import BookingValidationError, validate_booking_payload
 from Services.reccomendation import violates_supervisor_student_rule
 
 
+VALID_BOOKING_TYPES = {
+	Booking.BOOKING_TYPE_SYNDICATE,
+	Booking.BOOKING_TYPE_SUMMATIVE,
+	Booking.BOOKING_TYPE_GROUP,
+}
+
+
 class BookingConflictError(ValueError):
 	"""Raised when booking rules are violated."""
 
 
-def list_bookings() -> list[dict]:
+def normalize_booking_type(value: str | None) -> str | None:
+	if value is None:
+		return None
+
+	normalized = str(value).strip().lower()
+	return normalized if normalized in VALID_BOOKING_TYPES else None
+
+
+def list_bookings(booking_type: str | None = None) -> list[dict]:
 	queryset = Booking.objects.select_related("day", "panel", "slot").filter(
 		status=Booking.STATUS_ACTIVE
 	)
+	normalized_booking_type = normalize_booking_type(booking_type)
+	if normalized_booking_type:
+		queryset = queryset.filter(booking_type=normalized_booking_type)
+
 	return [serialize_booking(booking) for booking in queryset]
 
 
@@ -80,15 +99,23 @@ def create_booking(payload: dict) -> dict:
 	# One active booking per email + role (students only)
 	if data["role"] == Slot.ROLE_STUDENT:
 		if Booking.objects.filter(
-			email__iexact=data["email"], role=data["role"], status=Booking.STATUS_ACTIVE
+			email__iexact=data["email"],
+			role=data["role"],
+			booking_type=data["booking_type"],
+			status=Booking.STATUS_ACTIVE,
 		).exists():
 			raise BookingConflictError(
-				"You already have an active booking for this role. "
+				f"You already have an active {data['booking_type']} booking for this role. "
 				"Cancel your existing booking before making a new one."
 			)
 
 	if Booking.objects.filter(
-		day=day, panel=panel, role=data["role"], slot=slot, status=Booking.STATUS_ACTIVE
+		day=day,
+		panel=panel,
+		role=data["role"],
+		slot=slot,
+		booking_type=data["booking_type"],
+		status=Booking.STATUS_ACTIVE,
 	).exists():
 		raise BookingConflictError("Slot taken.")
 
@@ -101,6 +128,7 @@ def create_booking(payload: dict) -> dict:
 			first_name=data["first_name"],
 			surname=data["surname"],
 			email=data["email"],
+			booking_type=data["booking_type"],
 			role=data["role"],
 			supervisor=data["supervisor"],
 			co_supervisor=data["co_supervisor"],
@@ -109,8 +137,14 @@ def create_booking(payload: dict) -> dict:
 			slot=slot,
 		)
 	except IntegrityError as error:
-		if "unique_slot_booking" in str(error):
+		error_message = str(error)
+		if "unique_slot_booking" in error_message:
 			raise BookingConflictError("Slot taken.") from error
+		if "unique_active_booking_per_email_role_type" in error_message:
+			raise BookingConflictError(
+				f"You already have an active {data['booking_type']} booking for this role. "
+				"Cancel your existing booking before making a new one."
+			) from error
 		raise
 	return serialize_booking(booking)
 

@@ -1,3 +1,4 @@
+#password: uj-booking-settings
 # UJ Panel Booking Platform
 
 A Django-based booking system for university panel presentations with supervisor-student matching, one-booking-per-person restrictions, and real-time capacity tracking.

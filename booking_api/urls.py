@@ -4,6 +4,9 @@ from booking_api import views
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("syndicate/", views.index, name="syndicate-index"),
+    path("summative/", views.summative_index, name="summative-index"),
+    path("group/", views.group_index, name="group-index"),
     path("load-data/", views.load_data_page, name="load-data"),
     path("api/schedule/", views.schedule_config, name="schedule-config"),
     path("api/schedule/dates/", views.schedule_days, name="schedule-days"),

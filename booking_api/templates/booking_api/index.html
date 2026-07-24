@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>UJ Panel Booking</title>
+  <title>{{ page_title|default:"Panel Booking" }}</title>
   <style>
     * {
       box-sizing: border-box;
@@ -64,8 +64,11 @@
       margin-bottom: 12px;
     }
 
-    .header-top .inline-button {
-      margin-right: 5cm;
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .tag {
@@ -533,6 +536,13 @@
       box-shadow: none;
     }
 
+    .print-button {
+      background: white;
+      color: var(--black);
+      box-shadow: none;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
     .danger {
       background: var(--red);
       box-shadow: none;
@@ -752,9 +762,6 @@
         flex-direction: column;
         align-items: flex-start;
       }
-      .header-top .inline-button {
-        margin-right: 0;
-      }
       .editor-card-top {
         flex-direction: column;
         align-items: flex-start;
@@ -767,16 +774,57 @@
         flex-direction: column;
       }
     }
+
+    @media print {
+      body {
+        background: white;
+      }
+      header {
+        background: white;
+        color: var(--black);
+        padding: 0 0 24px;
+      }
+      header::after,
+      .booking-card,
+      .toast-stack,
+      .modal-backdrop,
+      .header-actions,
+      #settingsPanel {
+        display: none !important;
+      }
+      .container {
+        margin: 0;
+        max-width: none;
+        padding: 0;
+      }
+      .grid {
+        display: block;
+      }
+      .card {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+      }
+      .panel-card,
+      .day-title {
+        break-inside: avoid;
+        box-shadow: none;
+      }
+    }
   </style>
 </head>
-<body>
+<body data-booking-type="{{ booking_type|default:'syndicate' }}">
   <header>
     <div class="header-inner">
       <div class="header-top">
-        <div class="tag">UJ Panel Schedule</div>
-        <button type="button" id="settingsButton" class="secondary inline-button">Settings</button>
+        <div class="tag">{{ brand_tag|default:"Panel Schedule" }}</div>
+        <div class="header-actions">
+          <a href="/exportdata/?bookingType={{ booking_type|default:'syndicate' }}" class="inline-button print-button">Export CSV</a>
+          <button type="button" id="printButton" class="print-button inline-button">Print</button>
+          <button type="button" id="settingsButton" class="secondary inline-button">Settings</button>
+        </div>
       </div>
-      <h1>Panel Booking</h1>
+      <h1>{{ brand_name|default:"Panel Booking" }}</h1>
       <p class="subtitle">Select date. Select panel. Select slot.</p>
     </div>
   </header>

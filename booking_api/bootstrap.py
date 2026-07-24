@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, time, timedelta
 
 from booking_api.models import Panel, ScheduleDay, Slot
 
@@ -10,6 +10,22 @@ DEFAULT_STUDENT_SLOTS = [
     "11:30 - 12:00",
     "12:30 - 13:00",
 ]
+
+
+def build_half_hour_slots(start_at: time = time(9, 0), end_at: time = time(18, 0)) -> list[str]:
+    slots = []
+    current = datetime.combine(date.today(), start_at)
+    boundary = datetime.combine(date.today(), end_at)
+
+    while current < boundary:
+        next_time = current + timedelta(minutes=30)
+        slots.append(f"{current:%H:%M} - {next_time:%H:%M}")
+        current = next_time
+
+    return slots
+
+
+DEFAULT_BULK_STUDENT_SLOTS = build_half_hour_slots()
 
 
 def _normalize_values(values: list[str] | None, fallback: list[str]) -> list[str]:

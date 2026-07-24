@@ -1,0 +1,62 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Bulk Seed Schedule Dates | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_label|capfirst }}</a>
+  &rsaquo; <a href="{% url 'admin:booking_api_scheduleday_changelist' %}">Schedule days</a>
+  &rsaquo; Bulk seed dates
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Bulk Seed Schedule Dates</h1>
+
+<p style="max-width: 720px; color: #444; line-height: 1.6;">
+  Create or refresh multiple booking dates in one step. This tool seeds one panel across all selected dates and adds
+  half-hour student booking slots from <strong>{{ slot_range }}</strong>.
+</p>
+
+<div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:12px 16px; max-width:720px; margin-bottom:20px;">
+  <strong style="color:#c2410c;">What this does</strong>
+  <p style="margin:8px 0 0; color:#7c2d12;">
+    Existing dates with active bookings are skipped automatically. Dates without bookings are updated to use the panel
+    name you enter here, so you can seed cleanly in bulk and still delete individual dates later if needed.
+  </p>
+</div>
+
+<form method="post" style="max-width: 720px;">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+
+  <div style="margin-bottom:14px;">
+    <label for="{{ form.panel_name.id_for_label }}" style="display:block; font-weight:700; margin-bottom:6px;">{{ form.panel_name.label }}</label>
+    {{ form.panel_name }}
+    {% if form.panel_name.help_text %}
+      <p style="margin:6px 0 0; font-size:12px; color:#6b7280;">{{ form.panel_name.help_text }}</p>
+    {% endif %}
+    {{ form.panel_name.errors }}
+  </div>
+
+  <div style="margin-bottom:14px;">
+    <label for="{{ form.dates.id_for_label }}" style="display:block; font-weight:700; margin-bottom:6px;">{{ form.dates.label }}</label>
+    {{ form.dates }}
+    {% if form.dates.help_text %}
+      <p style="margin:6px 0 0; font-size:12px; color:#6b7280;">{{ form.dates.help_text }}</p>
+    {% endif %}
+    {{ form.dates.errors }}
+  </div>
+
+  <div style="display:flex; gap:10px;">
+    <input type="submit" value="Seed Dates"
+           style="background:#f58220; color:white; border:none; border-radius:8px; padding:10px 20px; font-weight:700; cursor:pointer;" />
+    <a href="{% url 'admin:booking_api_scheduleday_changelist' %}"
+       style="background:#111827; color:white; border-radius:8px; padding:10px 20px; font-weight:700; text-decoration:none; display:inline-block;">
+      Cancel
+    </a>
+  </div>
+</form>
+{% endblock %}

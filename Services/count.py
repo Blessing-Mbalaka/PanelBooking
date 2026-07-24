@@ -32,6 +32,7 @@ def serialize_booking(booking: Booking) -> dict:
 		"surname": booking.surname,
 		"name": booking.full_name,
 		"email": booking.email,
+		"bookingType": booking.booking_type,
 		"role": booking.role,
 		"supervisor": booking.supervisor or "",
 		"supervisorName": booking.co_supervisor or "",
