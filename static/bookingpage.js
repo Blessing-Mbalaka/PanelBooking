@@ -45,6 +45,7 @@ const panelEditorList = document.getElementById("panelEditorList");
 const slotEditorList = document.getElementById("slotEditorList");
 const addPanelButton = document.getElementById("addPanelButton");
 const addSlotButton = document.getElementById("addSlotButton");
+const autofillSlotsButton = document.getElementById("autofillSlotsButton");
 const sortPanelsButton = document.getElementById("sortPanelsButton");
 const sortSlotsButton = document.getElementById("sortSlotsButton");
 const saveDateConfigButton = document.getElementById("saveDateConfigButton");
@@ -119,6 +120,7 @@ function bindEvents() {
   addSlotButton.addEventListener("click", function () {
     addSlotEditorRow("", "");
   });
+  autofillSlotsButton.addEventListener("click", autofillHalfHourSlots);
   sortPanelsButton.addEventListener("click", sortPanelEditorRows);
   sortSlotsButton.addEventListener("click", sortSlotEditorRows);
   saveDateConfigButton.addEventListener("click", saveDateConfigurationFromModal);
@@ -560,6 +562,24 @@ function addSlotEditorRow(startTime, endTime) {
   row.appendChild(createFieldGroup("To", endInput));
   row.appendChild(actions);
   slotEditorList.appendChild(row);
+}
+
+function autofillHalfHourSlots() {
+  clearEditorList(slotEditorList);
+
+  let hour = 9;
+  let minute = 0;
+
+  while (hour < 18) {
+    const startTime = String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
+    minute += 30;
+    if (minute === 60) {
+      hour += 1;
+      minute = 0;
+    }
+    const endTime = String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
+    addSlotEditorRow(startTime, endTime);
+  }
 }
 
 function sortPanelEditorRows() {
