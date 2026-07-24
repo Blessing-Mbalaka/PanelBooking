@@ -88,8 +88,13 @@ def sync_schedule_day_config(day: ScheduleDay, panels: list[str] | None = None, 
     return day
 
 
-def create_schedule_day_config(day_date: date, panels: list[str] | None = None, student_slots: list[str] | None = None) -> ScheduleDay:
-    day, _ = ScheduleDay.objects.get_or_create(date=day_date)
+def create_schedule_day_config(
+    day_date: date,
+    booking_type: str = ScheduleDay.BOOKING_TYPE_SYNDICATE,
+    panels: list[str] | None = None,
+    student_slots: list[str] | None = None,
+) -> ScheduleDay:
+    day, _ = ScheduleDay.objects.get_or_create(date=day_date, booking_type=booking_type)
     return sync_schedule_day_config(day, panels=panels, student_slots=student_slots)
 
 

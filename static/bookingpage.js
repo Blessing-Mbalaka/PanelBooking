@@ -131,7 +131,7 @@ function bindEvents() {
 
 async function refreshData() {
   const data = await Promise.all([
-    apiFetch("/schedule/"),
+    apiFetch("/schedule/?bookingType=" + encodeURIComponent(bookingType)),
     apiFetch("/bookings/?bookingType=" + encodeURIComponent(bookingType)),
     apiFetch("/system-counts/"),
   ]);
@@ -695,11 +695,12 @@ async function saveDateConfiguration(dateValue, panels, studentSlots) {
       "Content-Type": "application/json",
       "X-CSRFToken": getCsrfToken(),
     },
-    body: JSON.stringify({
-      password: settingsPassword,
-      date: dateValue,
-      panels: panels,
-      studentSlots: studentSlots,
+      body: JSON.stringify({
+        password: settingsPassword,
+        bookingType: bookingType,
+        date: dateValue,
+        panels: panels,
+        studentSlots: studentSlots,
     }),
   });
 }
@@ -754,6 +755,7 @@ async function removeScheduleDate(dateValue) {
       },
       body: JSON.stringify({
         password: settingsPassword,
+        bookingType: bookingType,
         date: dateValue,
       }),
     });

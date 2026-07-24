@@ -2,13 +2,30 @@ from django.db import models
 
 
 class ScheduleDay(models.Model):
-	date = models.DateField(unique=True)
+	BOOKING_TYPE_SYNDICATE = "syndicate"
+	BOOKING_TYPE_SUMMATIVE = "summative"
+	BOOKING_TYPE_GROUP = "group"
+	BOOKING_TYPE_CHOICES = [
+		(BOOKING_TYPE_SYNDICATE, "Syndicate"),
+		(BOOKING_TYPE_SUMMATIVE, "Summative"),
+		(BOOKING_TYPE_GROUP, "Group"),
+	]
+
+	date = models.DateField()
+	booking_type = models.CharField(
+		max_length=20,
+		choices=BOOKING_TYPE_CHOICES,
+		default=BOOKING_TYPE_SYNDICATE,
+	)
 
 	class Meta:
+		constraints = [
+			models.UniqueConstraint(fields=["date", "booking_type"], name="unique_schedule_day_per_type"),
+		]
 		ordering = ["date"]
 
 	def __str__(self):
-		return self.date.isoformat()
+		return f"{self.date.isoformat()} ({self.booking_type})"
 
 
 class Panel(models.Model):
@@ -80,14 +97,10 @@ class Supervisor(models.Model):
 
 
 class Booking(models.Model):
-	BOOKING_TYPE_SYNDICATE = "syndicate"
-	BOOKING_TYPE_SUMMATIVE = "summative"
-	BOOKING_TYPE_GROUP = "group"
-	BOOKING_TYPE_CHOICES = [
-		(BOOKING_TYPE_SYNDICATE, "Syndicate"),
-		(BOOKING_TYPE_SUMMATIVE, "Summative"),
-		(BOOKING_TYPE_GROUP, "Group"),
-	]
+	BOOKING_TYPE_SYNDICATE = ScheduleDay.BOOKING_TYPE_SYNDICATE
+	BOOKING_TYPE_SUMMATIVE = ScheduleDay.BOOKING_TYPE_SUMMATIVE
+	BOOKING_TYPE_GROUP = ScheduleDay.BOOKING_TYPE_GROUP
+	BOOKING_TYPE_CHOICES = ScheduleDay.BOOKING_TYPE_CHOICES
 
 	ROLE_STUDENT = Slot.ROLE_STUDENT
 	ROLE_SUPERVISOR = Slot.ROLE_SUPERVISOR

@@ -75,10 +75,19 @@ def load_data_page(request):
 	return render(request, "booking_api/load_data.html")
 
 
+def _get_request_booking_type(request, fallback: str = "syndicate") -> str:
+	return normalize_booking_type(
+		request.GET.get("bookingType")
+		or request.POST.get("bookingType")
+		or fallback
+	) or fallback
+
+
 @require_http_methods(["GET"])
 def schedule_config(request):
+	booking_type = _get_request_booking_type(request)
 	payload = []
-	days = ScheduleDay.objects.prefetch_related("panels", "slots").all()
+	days = ScheduleDay.objects.prefetch_related("panels", "slots").filter(booking_type=booking_type).all()
 	for day in days:
 		day_panels = [panel.name for panel in day.panels.all()]
 		student_slots = [
@@ -95,6 +104,7 @@ def schedule_config(request):
 		payload.append(
 			{
 				"date": day.date.isoformat(),
+				"bookingType": day.booking_type,
 				"displayDate": day.date.strftime("%A %d %b"),
 				"panels": day_panels,
 				"studentSlots": student_slots,
@@ -162,6 +172,7 @@ def schedule_days(request):
 		return JsonResponse({"message": str(error)}, status=400)
 
 	date_value = (payload.get("date") or "").strip()
+	booking_type = normalize_booking_type(payload.get("bookingType")) or Booking.BOOKING_TYPE_SYNDICATE
 	if not date_value:
 		return JsonResponse({"message": "Choose a date."}, status=400)
 
@@ -177,7 +188,10 @@ def schedule_days(request):
 		except BookingValidationError as error:
 			return JsonResponse({"message": str(error)}, status=400)
 
-		day = ScheduleDay.objects.prefetch_related("panels", "slots").filter(date=selected_date).first()
+		day = ScheduleDay.objects.prefetch_related("panels", "slots").filter(
+			date=selected_date,
+			booking_type=booking_type,
+		).first()
 		if day is not None:
 			removed_panels = set(day.panels.values_list("name", flat=True)) - set(panels)
 			removed_slots = set(
@@ -199,18 +213,24 @@ def schedule_days(request):
 			).exists():
 				return JsonResponse({"message": "Cannot remove a time slot that already has bookings."}, status=400)
 
-		day = create_schedule_day_config(selected_date, panels=panels, student_slots=student_slots)
+		day = create_schedule_day_config(
+			selected_date,
+			booking_type=booking_type,
+			panels=panels,
+			student_slots=student_slots,
+		)
 		return JsonResponse(
 			{
 				"date": day.date.isoformat(),
 				"displayDate": day.date.strftime("%A %d %b"),
+				"bookingType": day.booking_type,
 				"panels": panels,
 				"studentSlots": student_slots,
 			},
 			status=201,
 		)
 
-	day = ScheduleDay.objects.filter(date=selected_date).first()
+	day = ScheduleDay.objects.filter(date=selected_date, booking_type=booking_type).first()
 	if day is None:
 		return JsonResponse({"message": "That date is not configured."}, status=404)
 	if Booking.objects.filter(day=day, status=Booking.STATUS_ACTIVE).exists():
@@ -413,10 +433,11 @@ def recommendations(request):
 	supervisor_name = (request.GET.get("supervisor") or "").strip()
 	date_value = (request.GET.get("date") or "").strip()
 	panel_name = (request.GET.get("panel") or "").strip()
+	booking_type = _get_request_booking_type(request)
 	if not supervisor_name or not date_value or not panel_name:
 		return JsonResponse({"recommendations": []})
 
-	day = ScheduleDay.objects.filter(date=date_value).first()
+	day = ScheduleDay.objects.filter(date=date_value, booking_type=booking_type).first()
 	panel = Panel.objects.filter(day=day, name=panel_name).first() if day else None
 	if not day or not panel:
 		return JsonResponse({"recommendations": []})

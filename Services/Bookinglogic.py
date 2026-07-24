@@ -84,7 +84,10 @@ def create_booking(payload: dict) -> dict:
 			"Please contact the administrator if you believe this is an error."
 		)
 
-	day = ScheduleDay.objects.filter(date=data["date"]).first()
+	day = ScheduleDay.objects.filter(
+		date=data["date"],
+		booking_type=data["booking_type"],
+	).first()
 	if day is None:
 		raise BookingValidationError("Select a valid date.")
 

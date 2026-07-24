@@ -27,7 +27,7 @@ class ScheduleConfigurationTests(TestCase):
 	def test_schedule_date_endpoint_requires_password_and_creates_date(self):
 		response = self.client.post(
 			reverse("schedule-days"),
-			data='{"password":"uj-booking-settings","date":"2026-05-25","panels":["Panel 1","Panel 2","Panel 5"],"studentSlots":["09:00 - 09:20","09:20 - 09:40"]}',
+			data='{"password":"uj-booking-settings","bookingType":"syndicate","date":"2026-05-25","panels":["Panel 1","Panel 2","Panel 5"],"studentSlots":["09:00 - 09:20","09:20 - 09:40"]}',
 			content_type="application/json",
 		)
 
@@ -44,7 +44,7 @@ class ScheduleConfigurationTests(TestCase):
 		day = create_schedule_day_config(date(2026, 5, 25))
 		response = self.client.post(
 			reverse("schedule-days"),
-			data='{"password":"uj-booking-settings","date":"2026-05-25","panels":["Panel A"],"studentSlots":["15:00 - 15:30"]}',
+			data='{"password":"uj-booking-settings","bookingType":"syndicate","date":"2026-05-25","panels":["Panel A"],"studentSlots":["15:00 - 15:30"]}',
 			content_type="application/json",
 		)
 
@@ -59,7 +59,7 @@ class ScheduleConfigurationTests(TestCase):
 	def test_schedule_date_endpoint_preserves_panel_order(self):
 		response = self.client.post(
 			reverse("schedule-days"),
-			data='{"password":"uj-booking-settings","date":"2026-05-26","panels":["Zulu","Alpha","Bravo"],"studentSlots":["09:00 - 09:20"]}',
+			data='{"password":"uj-booking-settings","bookingType":"syndicate","date":"2026-05-26","panels":["Zulu","Alpha","Bravo"],"studentSlots":["09:00 - 09:20"]}',
 			content_type="application/json",
 		)
 
@@ -83,7 +83,7 @@ class ScheduleConfigurationTests(TestCase):
 
 		response = self.client.delete(
 			reverse("schedule-days"),
-			data='{"password":"uj-booking-settings","date":"2026-05-25"}',
+			data='{"password":"uj-booking-settings","bookingType":"syndicate","date":"2026-05-25"}',
 			content_type="application/json",
 		)
 
@@ -105,19 +105,51 @@ class ScheduleConfigurationTests(TestCase):
 
 		response = self.client.post(
 			reverse("schedule-days"),
-			data='{"password":"uj-booking-settings","date":"2026-05-25","panels":["Panel 1"],"studentSlots":["11:00 - 11:30"]}',
+			data='{"password":"uj-booking-settings","bookingType":"syndicate","date":"2026-05-25","panels":["Panel 1"],"studentSlots":["11:00 - 11:30"]}',
 			content_type="application/json",
 		)
 
 		self.assertEqual(response.status_code, 400)
 
+	def test_schedule_config_is_filtered_by_booking_type(self):
+		create_schedule_day_config(date(2026, 8, 20), booking_type="syndicate", panels=["S Panel"], student_slots=["09:00 - 09:30"])
+		create_schedule_day_config(date(2026, 8, 20), booking_type="summative", panels=["M Panel"], student_slots=["10:00 - 10:30"])
+
+		response = self.client.get(reverse("schedule-config") + "?bookingType=summative")
+
+		self.assertEqual(response.status_code, 200)
+		payload = response.json()
+		self.assertEqual(len(payload), 1)
+		self.assertEqual(payload[0]["bookingType"], "summative")
+		self.assertEqual(payload[0]["panels"], ["M Panel"])
+
+	def test_schedule_settings_create_dates_per_page_type(self):
+		syndicate_response = self.client.post(
+			reverse("schedule-days"),
+			data='{"password":"uj-booking-settings","bookingType":"syndicate","date":"2026-08-21","panels":["Syndicate Panel"],"studentSlots":["09:00 - 09:30"]}',
+			content_type="application/json",
+		)
+		summative_response = self.client.post(
+			reverse("schedule-days"),
+			data='{"password":"uj-booking-settings","bookingType":"summative","date":"2026-08-21","panels":["Summative Panel"],"studentSlots":["10:00 - 10:30"]}',
+			content_type="application/json",
+		)
+
+		self.assertEqual(syndicate_response.status_code, 201)
+		self.assertEqual(summative_response.status_code, 201)
+		self.assertTrue(ScheduleDay.objects.filter(date="2026-08-21", booking_type="syndicate").exists())
+		self.assertTrue(ScheduleDay.objects.filter(date="2026-08-21", booking_type="summative").exists())
+
 
 
 class StudentBookingTests(TestCase):
 	def setUp(self):
-		self.day = ScheduleDay.objects.create(date=date(2026, 5, 25))
+		self.day = ScheduleDay.objects.create(date=date(2026, 5, 25), booking_type="syndicate")
 		self.panel_one = Panel.objects.create(day=self.day, name="Panel 1")
 		Slot.objects.create(day=self.day, role=Slot.ROLE_STUDENT, label="10:00 - 10:30")
+		self.summative_day = ScheduleDay.objects.create(date=date(2026, 5, 25), booking_type="summative")
+		self.summative_panel = Panel.objects.create(day=self.summative_day, name="Panel 1")
+		Slot.objects.create(day=self.summative_day, role=Slot.ROLE_STUDENT, label="10:00 - 10:30")
 
 	def test_student_booking_allows_blank_supervisor(self):
 		booking = create_booking({
@@ -155,9 +187,9 @@ class StudentBookingTests(TestCase):
 			"bookingType": "summative",
 			"role": Slot.ROLE_STUDENT,
 			"supervisor": "",
-			"date": self.day.date.isoformat(),
+			"date": self.summative_day.date.isoformat(),
 			"slot": "10:00 - 10:30",
-			"panel": self.panel_one.name,
+			"panel": self.summative_panel.name,
 		})
 
 		self.assertEqual(syndicate_booking["bookingType"], "syndicate")
@@ -303,14 +335,15 @@ class ScheduleDayAdminBulkSeedTests(TestCase):
 		response = self.client.post(
 			reverse("admin:booking_api_scheduleday_bulk_seed"),
 			data={
+				"booking_type": "syndicate",
 				"panel_name": "Syndicate Panel",
 				"dates": "2026-08-03\n2026-08-04",
 			},
 		)
 
 		self.assertEqual(response.status_code, 302)
-		first_day = ScheduleDay.objects.get(date="2026-08-03")
-		second_day = ScheduleDay.objects.get(date="2026-08-04")
+		first_day = ScheduleDay.objects.get(date="2026-08-03", booking_type="syndicate")
+		second_day = ScheduleDay.objects.get(date="2026-08-04", booking_type="syndicate")
 
 		for day in (first_day, second_day):
 			self.assertEqual(list(day.panels.values_list("name", flat=True)), ["Syndicate Panel"])
@@ -340,6 +373,7 @@ class ScheduleDayAdminBulkSeedTests(TestCase):
 		response = self.client.post(
 			reverse("admin:booking_api_scheduleday_bulk_seed"),
 			data={
+				"booking_type": "syndicate",
 				"panel_name": "Summative Panel",
 				"dates": "2026-08-05",
 			},

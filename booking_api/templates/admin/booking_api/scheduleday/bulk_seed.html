@@ -33,6 +33,15 @@
   {{ form.non_field_errors }}
 
   <div style="margin-bottom:14px;">
+    <label for="{{ form.booking_type.id_for_label }}" style="display:block; font-weight:700; margin-bottom:6px;">{{ form.booking_type.label }}</label>
+    {{ form.booking_type }}
+    {% if form.booking_type.help_text %}
+      <p style="margin:6px 0 0; font-size:12px; color:#6b7280;">{{ form.booking_type.help_text }}</p>
+    {% endif %}
+    {{ form.booking_type.errors }}
+  </div>
+
+  <div style="margin-bottom:14px;">
     <label for="{{ form.panel_name.id_for_label }}" style="display:block; font-weight:700; margin-bottom:6px;">{{ form.panel_name.label }}</label>
     {{ form.panel_name }}
     {% if form.panel_name.help_text %}

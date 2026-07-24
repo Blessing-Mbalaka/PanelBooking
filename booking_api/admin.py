@@ -47,6 +47,12 @@ def _rows_from_csv(file_obj):
 
 
 class BulkScheduleSeedForm(forms.Form):
+    booking_type = forms.ChoiceField(
+        label="Booking type",
+        choices=ScheduleDay.BOOKING_TYPE_CHOICES,
+        initial=ScheduleDay.BOOKING_TYPE_SYNDICATE,
+        help_text="Dates will be created only for this page type.",
+    )
     panel_name = forms.CharField(
         label="Panel name",
         max_length=100,
@@ -91,7 +97,8 @@ class BulkScheduleSeedForm(forms.Form):
 
 @admin.register(ScheduleDay)
 class ScheduleDayAdmin(admin.ModelAdmin):
-    list_display = ("id", "date")
+    list_display = ("id", "date", "booking_type")
+    list_filter = ("booking_type",)
     changelist_template = "admin/booking_api/scheduleday/change_list.html"
 
     def get_urls(self):
@@ -109,6 +116,7 @@ class ScheduleDayAdmin(admin.ModelAdmin):
         form = BulkScheduleSeedForm(request.POST or None)
 
         if request.method == "POST" and form.is_valid():
+            booking_type = form.cleaned_data["booking_type"]
             panel_name = form.cleaned_data["panel_name"].strip()
             selected_dates = form.cleaned_data["dates"]
             created_count = 0
@@ -116,7 +124,7 @@ class ScheduleDayAdmin(admin.ModelAdmin):
             skipped_dates = []
 
             for selected_date in selected_dates:
-                existing_day = ScheduleDay.objects.filter(date=selected_date).first()
+                existing_day = ScheduleDay.objects.filter(date=selected_date, booking_type=booking_type).first()
                 if existing_day and Booking.objects.filter(
                     day=existing_day,
                     status=Booking.STATUS_ACTIVE,
@@ -126,6 +134,7 @@ class ScheduleDayAdmin(admin.ModelAdmin):
 
                 create_schedule_day_config(
                     selected_date,
+                    booking_type=booking_type,
                     panels=[panel_name],
                     student_slots=DEFAULT_BULK_STUDENT_SLOTS,
                 )
@@ -138,7 +147,7 @@ class ScheduleDayAdmin(admin.ModelAdmin):
             if created_count or updated_count:
                 summary = (
                     f"Bulk seed complete: {created_count} created, {updated_count} updated. "
-                    f"Each date now has panel '{panel_name}' and half-hour slots from 09:00 to 18:00."
+                    f"Each {booking_type} date now has panel '{panel_name}' and half-hour slots from 09:00 to 18:00."
                 )
                 self.message_user(request, summary, level=messages.SUCCESS)
 
@@ -171,13 +180,13 @@ class ScheduleDayAdmin(admin.ModelAdmin):
 @admin.register(Panel)
 class PanelAdmin(admin.ModelAdmin):
     list_display = ("id", "day", "name", "sort_order")
-    list_filter = ("day",)
+    list_filter = ("day__booking_type", "day",)
 
 
 @admin.register(Slot)
 class SlotAdmin(admin.ModelAdmin):
     list_display = ("id", "day", "role", "label", "sort_order")
-    list_filter = ("day", "role")
+    list_filter = ("day__booking_type", "day", "role")
 
 
 @admin.register(SupervisorStudentLink)
